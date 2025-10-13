@@ -17,6 +17,7 @@ class RegistroUsuarioSerializer(serializers.ModelSerializer):
         )
         return user
 
+
 class LoginUsuarioSerializer(serializers.Serializer):
     nombre_usuario = serializers.CharField()
     contrasenia_usuario = serializers.CharField(write_only=True)
@@ -24,7 +25,7 @@ class LoginUsuarioSerializer(serializers.Serializer):
     def validate(self, data):
         user = authenticate(
             request=self.context.get('request'),
-            username=data['nombre_usuario'],
+            username=data['nombre_usuario'],  # debe coincidir con USERNAME_FIELD
             password=data['contrasenia_usuario']
         )
         if not user:
