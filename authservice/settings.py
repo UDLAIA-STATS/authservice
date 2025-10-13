@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'rest_framework.authtoken'
+    'rest_framework.authtoken',
     'users',
 ]
 
@@ -82,11 +82,11 @@ WSGI_APPLICATION = 'authservice.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('POSTGRES_DB'),
-        'USER': config('POSTGRES_USER'),
-        'PASSWORD': config('POSTGRES_PASSWORD'),
-        'HOST': config('POSTGRES_HOST', default='localhost'),
-        'PORT': config('POSTGRES_PORT', default='5432'),
+        'NAME': 'UdlaFutbolAppUsuarios',#config('POSTGRES_DB'),
+        'USER': 'postgres',#config('POSTGRES_USER'),
+        'PASSWORD': 'admin',#config('POSTGRES_PASSWORD'),
+        'HOST': 'localhost',#config('POSTGRES_HOST', default='localhost'),
+        'PORT': '5432' #config('POSTGRES_PORT', default='5432'),
     }
 }
 
