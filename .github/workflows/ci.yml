@@ -31,7 +31,7 @@ jobs:
       # 4️⃣ Configuración de base de datos SQLite (por defecto en tests)
       - name: Run Django tests
         env:
-          DJANGO_SETTINGS_MODULE: tu_proyecto.settings
+          DJANGO_SETTINGS_MODULE: authservice.settings
         run: |
           python manage.py migrate
           pytest -v
