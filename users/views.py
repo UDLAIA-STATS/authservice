@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
@@ -50,18 +51,20 @@ class UsuarioDetailView(APIView):
     """
     permission_classes = [permissions.IsAuthenticated, EsSuperUsuario]
 
-    def get_object(self, pk):
-        try:
-            return Usuario.objects.get(pk=pk)
-        except Usuario.DoesNotExist:
-            return None
+    def get_object(self, nombre_usuario):
+        """
+        Retorna el usuario correspondiente al nombre de usuario.
+        """
+        return get_object_or_404(Usuario, nombre_usuario=nombre_usuario)
 
-    def get(self, request, pk):
+    def get(self, request, nombre_usuario):
+        """
+        Obtiene los detalles de un usuario por su nombre de usuario.
+        """
         try:
-            usuario = self.get_object(pk)
-            if not usuario:
-                return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
-            return Response(RegistroUsuarioSerializer(usuario).data)
+            usuario = self.get_object(nombre_usuario)
+            serializer = RegistroUsuarioSerializer(usuario)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
