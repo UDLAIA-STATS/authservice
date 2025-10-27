@@ -26,10 +26,14 @@ class RegistroUsuarioSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'error': 'El usuario o correo ya está registrado.'})
         
     def update(self, instance, validated_data):
-        instance.nombre_usuario = validated_data.get('nombre_usuario', instance.nombre_usuario)
-        instance.email_usuario = validated_data.get('email_usuario', instance.email_usuario)
+        if 'nombre_usuario' in validated_data:
+            instance.nombre_usuario = validated_data.get('nombre_usuario', instance.nombre_usuario)
+        if 'email_usuario' in validated_data:
+            instance.email_usuario = validated_data.get('email_usuario', instance.email_usuario)
         if 'contrasenia_usuario' in validated_data:
-            instance.set_password(validated_data['contrasenia_usuario'])
+            password = validated_data['contrasenia_usuario']
+            if password:
+                instance.set_password(password)
         instance.rol = validated_data.get('rol', instance.rol)
         instance.save()
         return instance

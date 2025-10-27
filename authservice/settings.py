@@ -23,10 +23,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-eyv6v@4d)_(z8ydmj)$dau4zfvxm=dm)@cgmajde7*z4@kopgo'
+SECRET_KEY = "django-insecure-eyv6v@4d)_(z8ydmj)$dau4zfvxm=dm)@cgmajde7*z4@kopgo"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=True)
 
 ALLOWED_HOSTS = []
 
@@ -83,11 +83,11 @@ WSGI_APPLICATION = 'authservice.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'UdlaFutbolAppUsuarios',#config('POSTGRES_DB'),
-        'USER': 'postgres',#config('POSTGRES_USER'),
-        'PASSWORD': 'admin',#config('POSTGRES_PASSWORD'),
-        'HOST': 'localhost',#config('POSTGRES_HOST', default='localhost'),
-        'PORT': '5432' #config('POSTGRES_PORT', default='5432'),
+        'NAME': config('POSTGRES_DB'),
+        'USER': config('POSTGRES_USER'),
+        'PASSWORD': config('POSTGRES_PASSWORD'),
+        'HOST': config('POSTGRES_HOST', default='localhost'),
+        'PORT': config('POSTGRES_PORT', default='5432'),
     }
 }
 
