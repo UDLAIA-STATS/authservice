@@ -1,3 +1,4 @@
+from math import ceil
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
@@ -114,20 +115,82 @@ class UsuarioDeleteView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
        
-
 class UsuarioAllView(APIView):
     """
     Solo los superusuarios pueden ver todos los usuarios.
+    Permite paginar resultados con los parámetros:
+    - ?page=<número de página>
+    - ?offset=<cantidad de items por página>
     """
     permission_classes = [permissions.IsAuthenticated, EsSuperUsuario]
-    
+
     def get(self, request):
         try:
-            usuarios = Usuario.objects.all()
-            serializer = RegistroUsuarioSerializer(usuarios, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            # Obtener parámetros de paginación desde la URL
+            page = int(request.query_params.get('page', 1))
+            offset = int(request.query_params.get('offset', 10))
+
+            if page < 1 or offset < 1:
+                return Response(
+                    {"error": "Los parámetros 'page' y 'offset' deben ser mayores a 0."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Obtener todos los usuarios
+            usuarios = Usuario.objects.all().order_by('id')
+
+            total_items = usuarios.count()
+            total_pages = ceil(total_items / offset)
+
+            # Calcular los índices de paginación
+            start = (page - 1) * offset
+            end = start + offset
+
+            # Cortar el queryset según la página solicitada
+            usuarios_paginados = usuarios[start:end]
+
+            # Serializar los datos
+            serializer = RegistroUsuarioSerializer(usuarios_paginados, many=True)
+
+            # Construir respuesta con metadatos de paginación
+            response_data = {
+                "items": serializer.data,
+                "pagination": {
+                    "total_items": total_items,
+                    "total_pages": total_pages,
+                    "current_page": page,
+                    "offset": offset,
+                    "has_next": page < total_pages,
+                    "has_previous": page > 1,
+                }
+            }
+
+            return Response(response_data, status=status.HTTP_200_OK)
+
+        except ValueError:
+            return Response(
+                {"error": "Los parámetros 'page' y 'offset' deben ser enteros."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+# class UsuarioAllView(APIView):
+#     """
+#     Solo los superusuarios pueden ver todos los usuarios.
+#     """
+#     permission_classes = [permissions.IsAuthenticated, EsSuperUsuario]
+    
+#     def get(self, request):
+#         try:
+#             usuarios = Usuario.objects.all()
+#             serializer = RegistroUsuarioSerializer(usuarios, many=True)
+#             return Response(serializer.data, status=status.HTTP_200_OK)
+#         except Exception as e:
+#             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class LoginUsuarioView(APIView):
     """
