@@ -1,0 +1,62 @@
+name: Deploy AuthService to DockerHub
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      REGISTRY: docker.io
+      DOCKERHUB_USER: dase123
+      IMAGE_NAME: udlaia-stats
+      SERVICE_NAME: authservice
+
+    steps:
+      # 1️⃣ Checkout del repositorio
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ Configurar Python 3.13
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      # 3️⃣ Instalar dependencias
+      - name: Install dependencies
+        run: |
+          pip install --no-cache-dir -r requirements.txt
+
+      # 4️⃣ Comprobar que el servicio arranca correctamente
+      - name: Django health check
+        run: |
+          python manage.py check
+          echo "✅ AuthService health check passed"
+
+      # 5️⃣ Login a DockerHub
+      - name: Log in to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 6️⃣ Build & Push Docker image
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.DOCKERHUB_USER }}/${{ env.IMAGE_NAME }}:${{ env.SERVICE_NAME }}
+            ${{ env.DOCKERHUB_USER }}/${{ env.IMAGE_NAME }}:${{ env.SERVICE_NAME }}-${{ github.run_number }}
+
+      # 7️⃣ Confirmación
+      - name: Deployment summary
+        run: |
+          echo "✅ AuthService deployed successfully!"
+          echo "Image: ${{ env.DOCKERHUB_USER }}/${{ env.IMAGE_NAME }}:${{ env.SERVICE_NAME }}"
