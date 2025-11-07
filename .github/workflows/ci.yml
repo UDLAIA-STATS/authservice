@@ -6,11 +6,38 @@ on:
   pull_request:
     branches: [ develop ]
 
+
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     name: Ejecutar pruebas Django
     environment: develop
+
+    env:
+      DEBUG: True
+      DB_ENGINE: django.db.backends.postgresql
+      ALLOWED_HOSTS: localhost,127.0.0.1
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U "${{ env.POSTGRES_USER }}"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
 
     steps:
       - name: Checkout repository
@@ -26,6 +53,29 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install django djangorestframework pytest pytest-django
+
+      - name: Install PSQL
+        run: |
+          sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Wait for PostgreSQL to be ready
+        run: |
+          echo "Esperando a que PostgreSQL esté disponible..."
+          for i in {1..15}; do
+            if pg_isready -h localhost -p 5432 -U "${{ env.POSTGRES_USER }}" > /dev/null; then
+              echo "PostgreSQL está listo!"
+              break
+            fi
+            echo "Esperando..."
+            sleep 3
+          done
+
+      - name: Create database
+        run: |
+          psql -h localhost -U "${{ env.POSTGRES_USER }}" -d postgres -c "CREATE DATABASE \"${{ env.POSTGRES_DB }}\";"
+        env:
+          PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
+
 
       - name: Check Django environment
         env:
