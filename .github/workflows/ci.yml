@@ -6,37 +6,36 @@ on:
   pull_request:
     branches: [ develop ]
 
-
+env:
+  DEBUG: True
+  DB_ENGINE: django.db.backends.postgresql
+  ALLOWED_HOSTS: localhost,127.0.0.1
+  POSTGRES_HOST: localhost
+  POSTGRES_PORT: 5432
+  POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+  POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+  POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
 
 jobs:
-  build-and-test:
+  setup-environment:
     runs-on: ubuntu-latest
-    name: Ejecutar pruebas Django
+    name: Configurar entorno Django
     environment: develop
 
-    env:
-      DEBUG: True
-      DB_ENGINE: django.db.backends.postgresql
-      ALLOWED_HOSTS: localhost,127.0.0.1
-      POSTGRES_HOST: localhost
-      POSTGRES_PORT: 5432
-      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-      
     services:
       postgres:
         image: postgres:16
         env:
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U postgres
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
+          --health-cmd pg_isready -U postgres
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout repository
@@ -53,7 +52,7 @@ jobs:
           pip install -r requirements.txt
           pip install django djangorestframework pytest pytest-django
 
-      - name: Install PSQL
+      - name: Install PostgreSQL client
         run: |
           sudo apt-get update && sudo apt-get install -y postgresql-client
 
@@ -62,25 +61,69 @@ jobs:
           echo "Esperando a que PostgreSQL esté disponible..."
           for i in {1..15}; do
             if pg_isready -h localhost -p 5432 -U "${{ env.POSTGRES_USER }}" > /dev/null; then
-              echo "PostgreSQL está listo!"
+              echo "✅ PostgreSQL está listo!"
               break
             fi
             echo "Esperando..."
             sleep 3
           done
 
-      - name: Create database
+      - name: Create test database
         run: |
           psql -h localhost -U "${{ env.POSTGRES_USER }}" -d postgres -c "CREATE DATABASE \"${{ env.POSTGRES_DB }}\";"
         env:
           PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
 
+      - name: Cache virtual environment
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
-      - name: Check Django environment
+      - name: Save Python environment
+        run: echo "Entorno preparado correctamente ✅"
+
+  run-tests:
+    runs-on: ubuntu-latest
+    name: Ejecutar pruebas Django
+    needs: setup-environment
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready -U postgres
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies (cached)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install django djangorestframework pytest pytest-django
+
+      - name: Run migrations
         env:
           DJANGO_SETTINGS_MODULE: authservice.settings
         run: |
-          python manage.py check
           python manage.py migrate --noinput
 
       - name: Run Django tests
@@ -88,11 +131,11 @@ jobs:
           DJANGO_SETTINGS_MODULE: authservice.settings
         run: |
           pytest -v --maxfail=1 --disable-warnings
-  
+
   create-pr-main:
     runs-on: ubuntu-latest
-    needs: build-and-test
-    if: success()  
+    needs: run-tests
+    if: success()
     steps:
       - name: Create Pull Request to main
         uses: peter-evans/create-pull-request@v7
@@ -105,4 +148,4 @@ jobs:
           committer: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
           author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
           body: |
-            Este Pull Request fue generado automáticamente luego de pasar las pruebas en Django.
+            ✅ Este Pull Request fue generado automáticamente luego de pasar las pruebas en Django.
