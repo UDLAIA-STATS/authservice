@@ -19,6 +19,7 @@ env:
 jobs:
   setup-environment:
     runs-on: ubuntu-latest
+    container: node:20-bookworm-slim
     name: Configurar entorno Django
     environment: develop
 
@@ -29,10 +30,8 @@ jobs:
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-        ports:
-          - 5432:5432
         options: >-
-          --health-cmd pg_isready -U postgres
+          --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
