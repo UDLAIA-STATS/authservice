@@ -39,16 +39,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Validate docker image
-        run: |
-          echo "Validando la imagen de Docker de PostgreSQL..."
-          if docker pull dase123/udlaia-stats:udla_postgres; then
-            echo "Imagen de Docker validada correctamente."
-          else
-            echo "Error al validar la imagen de Docker."
-            exit 1
-          fi
-
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
@@ -76,23 +66,8 @@ jobs:
           --health-interval=5s
           --health-timeout=5s
           --health-retries=10
-          
+        
     steps:
-      - name: Wait for PostgreSQL service
-        run: |
-          echo "Esperando que PostgreSQL esté listo en host=${{ env.POSTGRES_HOST }} port=${{ env.POSTGRES_PORT }}..."
-          for i in {1..20}; do
-            if pg_isready -h "${{ env.POSTGRES_HOST }}" -p "${{ env.POSTGRES_PORT }}" -U "${{ env.POSTGRES_USER }}" -d "${{ env.POSTGRES_DB }}" >/dev/null 2>&1; then
-              echo "PostgreSQL está disponible"
-              exit 0
-            fi
-            echo "Esperando... ($i/20)"
-            sleep 3
-          done
-          echo "PostgreSQL no respondió a tiempo."
-          docker ps --filter "ancestor=dase123/udlaia-stats:udla_postgres" --format "table {{.ID}}\t{{.Status}}\t{{.Names}}"
-          exit 1
-
       - name: Run migrations
         env:
           DJANGO_SETTINGS_MODULE: authservice.settings
