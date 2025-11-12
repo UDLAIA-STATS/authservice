@@ -11,7 +11,7 @@ env:
   DB_ENGINE: django.db.backends.postgresql
   ALLOWED_HOSTS: localhost,127.0.0.1
   POSTGRES_HOST: localhost
-  POSTGRES_PORT: 5432
+  POSTGRES_PORT: 5440
   POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
   POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
   POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
@@ -35,6 +35,25 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install django djangorestframework pytest pytest-django psycopg2-binary
+
+      - name: Pull database container
+        run: |
+          docker pull dase123/udlaia-stats:udla_postgres
+          docker run -d --name udla_postgres_container -e POSTGRES_PASSWORD=0000 -p 5440:5432 dase123/udlaia-stats:udla_postgres
+
+      - name: Check container running
+        run: |
+          docker ps -a
+
+      - name: Run Django migrations
+        run: |
+          echo "Ejecutando migraciones..."
+          python manage.py migrate --noinput
+
+      - name: Run Django makemigrations
+        run: |
+          echo "Ejecutando makemigrations..."
+          python manage.py makemigrations --noinput
 
       - name: Run Django tests
         run: |
