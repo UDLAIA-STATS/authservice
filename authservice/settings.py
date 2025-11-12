@@ -81,15 +81,7 @@ WSGI_APPLICATION = 'authservice.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-if 'test' in sys.argv:
-    DATABASES = {
-        'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': ':memory:',
-        }
-    } 
-else:   
-    DATABASES = {
+DATABASES = {
         'default': {
             'ENGINE': config('DB_ENGINE', default='django.db.backends.postgresql'),
             'NAME': config('POSTGRES_DB'),
@@ -98,7 +90,7 @@ else:
             'HOST': config('POSTGRES_HOST', default='localhost'),
             'PORT': config('POSTGRES_PORT', default='5432'),
         }
-    } 
+} 
     
 
 

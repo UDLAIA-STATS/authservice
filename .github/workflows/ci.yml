@@ -36,13 +36,6 @@ jobs:
           pip install -r requirements.txt
           pip install django djangorestframework pytest pytest-django psycopg2-binary
 
-      - name: Run migrations (SQLite test DB)
-        env:
-          DJANGO_SETTINGS_MODULE: authservice.settings
-        run: |
-          echo "Aplicando migraciones en base de datos temporal (SQLite en memoria)..."
-          python manage.py migrate --noinput
-
       - name: Run Django tests
         env:
           DJANGO_SETTINGS_MODULE: authservice.settings
