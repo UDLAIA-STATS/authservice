@@ -61,4 +61,4 @@ jobs:
       - name: Deployment summary
         run: |
           echo "✅ AuthService deployed successfully!"
-          echo "Image: ${{ vars.DOCKERHUB_USER }}/${{ env.IMAGE_NAME }}:${{ env.SERVICE_NAME }}"
+          echo "Image: ${{ vars.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.SERVICE_NAME }}"
