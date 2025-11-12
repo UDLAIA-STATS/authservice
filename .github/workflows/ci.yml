@@ -17,26 +17,18 @@ env:
   POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
 
 jobs:
-  test:
+  setup:
     runs-on: ubuntu-latest
     name: Configurar entorno Django
-    env:
-      # Ajusta estas variables para que Django use el servicio de PostgreSQL
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5440
-      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-
     services:
       postgres:
-        image: dase123/udlaia-stats:udla_postgres
+        image: postgres:16
         env:
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         options: >-
-          --health-cmd="pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"
+          --health-cmd=pg_isready
           --health-interval=5s
           --health-timeout=5s
           --health-retries=10
@@ -66,6 +58,24 @@ jobs:
           pip install -r requirements.txt
           pip install django djangorestframework pytest pytest-django psycopg2-binary
 
+
+  tests:
+    needs: setup
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        options: >-
+          --health-cmd=pg_isready
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+          
+    steps:
       - name: Wait for PostgreSQL service
         run: |
           echo "Esperando que PostgreSQL esté listo en host=${{ env.POSTGRES_HOST }} port=${{ env.POSTGRES_PORT }}..."
