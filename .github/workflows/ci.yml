@@ -21,6 +21,21 @@ jobs:
     runs-on: ubuntu-latest
     name: Ejecutar pruebas Django con base de datos en memoria
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U django -d django_db"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -29,6 +44,17 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: '3.13'
+       
+      - name: Wait for PostgreSQL
+        env:
+          DATABASE_USER: ${{ env.POSTGRES_USER }}
+          DATABASE_PORT: ${{ env.POSTGRES_PORT }}
+          POSTGRES_HOST: ${{ env.POSTGRES_HOST }}
+        run: |
+          until pg_isready -h $POSTGRES_HOST -p $DATABASE_PORT -U $DATABASE_USER; do
+            echo "Esperando PostgreSQL..."
+            sleep 3
+          done
 
       - name: Install dependencies
         run: |
@@ -36,24 +62,10 @@ jobs:
           pip install -r requirements.txt
           pip install django djangorestframework pytest pytest-django psycopg2-binary
 
-      - name: Pull database container
-        run: |
-          docker pull dase123/udlaia-stats:udla_postgres
-          docker run -d --name udla_postgres_container -e POSTGRES_PASSWORD=0000 -p 5440:5432 dase123/udlaia-stats:udla_postgres
-
-      - name: Check container running
-        run: |
-          docker ps -a
-
       - name: Run Django migrations
         run: |
           echo "Ejecutando migraciones..."
           python manage.py migrate --noinput
-
-      - name: Run Django makemigrations
-        run: |
-          echo "Ejecutando makemigrations..."
-          python manage.py makemigrations --noinput
 
       - name: Run Django tests
         run: |
