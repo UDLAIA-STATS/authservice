@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from email.policy import default
 import os
 from pathlib import Path
+import sys
 from decouple import config
 from django.core.management.commands.runserver import Command as rs
 
@@ -91,6 +92,11 @@ DATABASES = {
     }
 } 
 
+if 'test' in sys.argv:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': ':memory:',
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators

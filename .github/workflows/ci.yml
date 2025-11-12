@@ -19,7 +19,8 @@ env:
 jobs:
   tests:
     runs-on: ubuntu-latest
-    name: Configurar entorno Django
+    name: Ejecutar pruebas Django con base de datos en memoria
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -29,57 +30,22 @@ jobs:
         with:
           python-version: '3.13'
 
-      - name: Pull docker repository
-        run: |
-          docker pull dase123/udlaia-stats:udla_postgres
-      
-      - name : Run docker container
-        env:
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-        run: |
-          docker run -d \
-            -p 5440:5432 \
-            --name udla_postgres \
-            -e POSTGRES_DB=$POSTGRES_DB \
-            -e POSTGRES_USER=$POSTGRES_USER \
-            -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
-            dase123/udlaia-stats:udla_postgres
-
-      - name: Wait for PostgreSQL to be ready
-        env:
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-        run: |
-          echo "⏳ Esperando que PostgreSQL esté listo..."
-          for i in {1..20}; do
-            if docker exec udla_postgres pg_isready -U $POSTGRES_USER -d $POSTGRES_DB > /dev/null 2>&1; then
-              echo "✅ PostgreSQL está disponible!"
-              break
-            fi
-            echo "Esperando... intento $i/20"
-            sleep 3
-          done
-
-          docker ps
-          echo "Verificando logs del contenedor..."
-          docker logs udla_postgres | tail -n 20
-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install django djangorestframework pytest pytest-django psycopg2-binary    
-      - name: Run migrations
+          pip install django djangorestframework pytest pytest-django psycopg2-binary
+
+      - name: Run migrations (SQLite test DB)
         env:
           DJANGO_SETTINGS_MODULE: authservice.settings
         run: |
+          echo "Aplicando migraciones en base de datos temporal (SQLite en memoria)..."
           python manage.py migrate --noinput
 
       - name: Run Django tests
         env:
           DJANGO_SETTINGS_MODULE: authservice.settings
         run: |
+          echo "Ejecutando tests con pytest..."
           pytest -v --maxfail=1 --disable-warnings
