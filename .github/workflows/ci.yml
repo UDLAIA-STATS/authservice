@@ -53,7 +53,8 @@ jobs:
           PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
           PGUSER: ${{ env.POSTGRES_USER }}
           PGDATABASE: ${{ env.POSTGRES_DB }}
-        run: psql -h localhost -U $PGUSER -d $PGDATABASE -c "SHOW wal_level;"
+          PGPORT: 5440
+        run: psql -h localhost -U $PGUSER -d $PGDATABASE -p $PGPORT -c "SHOW wal_level;"
 
       - name: Install dependencies
         run: |
