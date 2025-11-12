@@ -45,16 +45,15 @@ jobs:
         with:
           python-version: '3.13'
        
-      - name: Wait for PostgreSQL
+      - name: Print Services
+        run: service --status-all
+
+      - name: Verify wal_level
         env:
-          DATABASE_USER: ${{ env.POSTGRES_USER }}
-          DATABASE_PORT: ${{ env.POSTGRES_PORT }}
-          POSTGRES_HOST: ${{ env.POSTGRES_HOST }}
-        run: |
-          until pg_isready -h $POSTGRES_HOST -p $DATABASE_PORT -U $DATABASE_USER; do
-            echo "Esperando PostgreSQL..."
-            sleep 3
-          done
+          PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          PGUSER: ${{ env.POSTGRES_USER }}
+          PGDATABASE: ${{ env.POSTGRES_DB }}
+        run: psql -h localhost -U $PGUSER -d $PGDATABASE -c "SHOW wal_level;"
 
       - name: Install dependencies
         run: |
