@@ -39,4 +39,4 @@ jobs:
       - name: Run Django tests
         run: |
           echo "Ejecutando tests con pytest..."
-          py manage.py test
+          python manage.py test
