@@ -89,6 +89,9 @@ DATABASES = {
             'PASSWORD': config('POSTGRES_PASSWORD'),
             'HOST': config('POSTGRES_HOST', default='localhost'),
             'PORT': config('POSTGRES_PORT', default='5432'),
+            'TEST': {
+                'NAME': 'test_authservice_db',
+            }
         }
 } 
     

@@ -37,8 +37,6 @@ jobs:
           pip install django djangorestframework pytest pytest-django psycopg2-binary
 
       - name: Run Django tests
-        env:
-          DJANGO_SETTINGS_MODULE: authservice.settings
         run: |
           echo "Ejecutando tests con pytest..."
-          pytest -v --maxfail=1 --disable-warnings
+          py manage.py test
