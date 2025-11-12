@@ -20,21 +20,6 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     name: Configurar entorno Django
-    # services:
-    #   postgres:
-    #     image: postgres:16
-    #     env:
-    #       POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-    #       POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-    #       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-    #     ports:
-    #       - 5440:5432
-    #     options: >-
-    #       --health-cmd=pg_isready
-    #       --health-interval=5s
-    #       --health-timeout=5s
-    #       --health-retries=10
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -54,12 +39,33 @@ jobs:
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         run: |
-          docker run -d -p 5440:5432 --name udla_postgres -e POSTGRES_DB=$POSTGRES_DB -e POSTGRES_USER=$POSTGRES_USER -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD dase123/udlaia-stats:udla_postgres
+          docker run -d \
+            -p 5440:5432 \
+            --name udla_postgres \
+            -e POSTGRES_DB=$POSTGRES_DB \
+            -e POSTGRES_USER=$POSTGRES_USER \
+            -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
+            dase123/udlaia-stats:udla_postgres
 
-      - name: Check docker running
+      - name: Wait for PostgreSQL to be ready
+        env:
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         run: |
-          docker ps -a
-          echo "Docker container is running"
+          echo "⏳ Esperando que PostgreSQL esté listo..."
+          for i in {1..20}; do
+            if docker exec udla_postgres pg_isready -U $POSTGRES_USER -d $POSTGRES_DB > /dev/null 2>&1; then
+              echo "✅ PostgreSQL está disponible!"
+              break
+            fi
+            echo "Esperando... intento $i/20"
+            sleep 3
+          done
+
+          docker ps
+          echo "Verificando logs del contenedor..."
+          docker logs udla_postgres | tail -n 20
 
       - name: Install dependencies
         run: |
