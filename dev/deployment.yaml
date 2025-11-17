@@ -12,6 +12,8 @@ spec:
       labels:
         app: authservice
     spec:
+      imagePullSecrets:
+        - name: regcred
       containers:
         - name: authservice
           image: udlaia-stats/authservice:dev
@@ -23,4 +25,4 @@ spec:
               cpu: "500m"
               memory: "256Mi"
           ports:
-          - containerPort: 3000
+            - containerPort: 3000
