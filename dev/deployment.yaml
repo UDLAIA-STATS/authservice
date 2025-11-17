@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: authservice
+  labels:
+    app: authservice
 spec:
   replicas: 1
   selector:
@@ -17,12 +19,5 @@ spec:
       containers:
         - name: authservice
           image: udlaia-stats/authservice:dev
-          resources:
-            requests:
-              cpu: "100m"
-              memory: "128Mi"
-            limits:
-              cpu: "500m"
-              memory: "256Mi"
           ports:
             - containerPort: 3000

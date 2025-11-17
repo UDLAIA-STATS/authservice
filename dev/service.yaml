@@ -1,18 +1,15 @@
-apiVersion: argoproj.io/v1alpha1
-kind: Application
+apiVersion: v1
+kind: Service
 metadata:
-  name: authservice-dev
-  namespace: argocd
+  name: authservice
+  labels:
+    app: authservice
 spec:
-  project: default
-  source:
-    repoURL: https://github.com/UDLAIA-STATS/authservice.git
-    targetRevision: develop
-    path: develop
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: authservice-dev
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
+  selector:
+    app: authservice
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+      protocol: TCP
+  type: ClusterIP
