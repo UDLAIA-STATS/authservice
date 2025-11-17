@@ -11,7 +11,7 @@ spec:
     path: prod
   destination:
     server: https://kubernetes.default.svc
-    namespace: default
+    namespace: authservice-prod
   syncPolicy:
     automated:
       prune: true
