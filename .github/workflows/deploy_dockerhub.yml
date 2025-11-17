@@ -96,6 +96,7 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
+      
       - name: Set up .env file
         run: | 
           echo "DEBUG=True" > .env
