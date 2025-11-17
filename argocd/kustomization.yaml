@@ -1,0 +1,3 @@
+resources:
+  - authservice-dev.yaml
+  - authservice-prod.yaml
