@@ -50,6 +50,3 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f"{self.nombre_usuario} ({self.rol})"
-    
-    class Meta:
-        db_table = 'usuarios'

@@ -80,7 +80,7 @@ class UsuarioUpdateView(APIView):
         try:
             return Usuario.objects.get(nombre_usuario=nombre_usuario)
         except Usuario.DoesNotExist:
-            return None
+            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
 
     def patch(self, request, nombre_usuario):
         usuario = self.get_object(nombre_usuario)
@@ -178,6 +178,19 @@ class UsuarioAllView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+# class UsuarioAllView(APIView):
+#     """
+#     Solo los superusuarios pueden ver todos los usuarios.
+#     """
+#     permission_classes = [permissions.IsAuthenticated, EsSuperUsuario]
+    
+#     def get(self, request):
+#         try:
+#             usuarios = Usuario.objects.all()
+#             serializer = RegistroUsuarioSerializer(usuarios, many=True)
+#             return Response(serializer.data, status=status.HTTP_200_OK)
+#         except Exception as e:
+#             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class LoginUsuarioView(APIView):
     """

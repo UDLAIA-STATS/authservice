@@ -13,7 +13,6 @@ psycopg2-binary = "*"
 python-dotenv = "*"
 django-cors-headers = "*"
 pylint-django = "*"
-pytest = "*"
 
 [dev-packages]
 
