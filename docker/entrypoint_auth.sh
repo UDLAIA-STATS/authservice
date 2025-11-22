@@ -14,6 +14,7 @@ fi
 # Crear migraciones y aplicar migraciones (no interactivo)
 python manage.py makemigrations --noinput || true
 python manage.py migrate --noinput
+python manage.py createsuperuser --noinput --username "administrador" --email "admin@gmail.com" --password "administrador123" || true
 
 # Arrancar servidor (en dev uso runserver; reemplaza por gunicorn para producción)
 exec python manage.py runserver 0.0.0.0:8010
