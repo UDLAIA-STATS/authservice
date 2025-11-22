@@ -83,7 +83,7 @@ WSGI_APPLICATION = 'authservice.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 DATABASES = {
         'default': {
-            'ENGINE': config('DB_ENGINE', default='django.db.backends.postgresql'),
+            'ENGINE': 'django.db.backends.postgresql',
             'NAME': config('POSTGRES_DB'),
             'USER': config('POSTGRES_USER', default='postgres'),
             'PASSWORD': config('POSTGRES_PASSWORD'),
