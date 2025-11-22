@@ -99,7 +99,6 @@ jobs:
       - name: Set up .env file
         run: | 
           echo "DEBUG=True" > .env
-          echo "DB_ENGINE=django.db.backends.postgresql" >> .env
           echo "ALLOWED_HOSTS=localhost,127.0.0.1" >> .env
           echo "POSTGRES_HOST=localhost" >> .env
           echo "POSTGRES_PORT=5440" >> .env
@@ -110,6 +109,19 @@ jobs:
       - name: Construir imagen del microservicio Django
         run: |
           docker build \
+            --build-arg DEBUG=True \
+            --build-arg ALLOWED_HOSTS=localhost,127.0.0.1 \
+            --build-arg POSTGRES_HOST=localhost \
+            --build-arg POSTGRES_PORT=5440 \
+            --build-arg POSTGRES_DB=${{ secrets.POSTGRES_DB }} \
+            --build-arg POSTGRES_USER=${{ secrets.POSTGRES_USER }} \
+            --build-arg POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
+            --build-arg DJANGO_SUPERUSER_PASSWORD=${{ secrets.DJANGO_SUPERUSER_PASSWORD }} \
+            --build-arg FRONTEND_URL=${{ secrets.FRONTEND_URL }} \
+            --build-arg DJANGO_SUPERUSER_USERNAME=${{ secrets.DJANGO_SUPERUSER_USERNAME }} \
+            --build-arg DJANGO_SUPERUSER_EMAIL=${{ secrets.DJANGO_SUPERUSER_EMAIL }} \
+            --build-arg API_PORT=8010 \
+
             -t ${{ env.IMAGE_NAME }} \
             -f Dockerfile .
 

@@ -1,0 +1,23 @@
+services:
+  authservice:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: authservice
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - DEBUG=${DEBUG}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - FRONTEND_URL=${FRONTEND_URL}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD}
+      - API_PORT=${API_PORT}
+    ports:
+      - "${API_PORT}:8010"
+    
