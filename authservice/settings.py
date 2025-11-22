@@ -16,7 +16,7 @@ import sys
 from decouple import config
 from django.core.management.commands.runserver import Command as rs
 
-rs.default_port = 8010
+rs.default_port = int(config('API_PORT', default='8010'))
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
