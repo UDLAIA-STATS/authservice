@@ -18,17 +18,15 @@ echo "Postgres disponible."
 python manage.py migrate --noinput
 
 # Crear superusuario solo si no existe
-if [ -n "$DJANGO_SUPERUSER_PASSWORD" ]; then
-python <<EOF
-from django.contrib.auth import get_user_model
-User = get_user_model()
-if not User.objects.filter(nombre_usuario="administrador").exists():
-    User.objects.create_superuser(
-        "administrador",
-        "admin@gmail.com",
-        "$DJANGO_SUPERUSER_PASSWORD"
-    )
-EOF
+if [[ -n "$DJANGO_SUPERUSER_USERNAME" ]] && [[ -n "$DJANGO_SUPERUSER_EMAIL" ]] && [[ -n "$DJANGO_SUPERUSER_PASSWORD" ]]; then
+  echo "Creando superusuario usando parámetros CLI de Django..."
+  python manage.py createsuperuser \
+      --noinput \
+      --username="$DJANGO_SUPERUSER_USERNAME" \
+      --email="$DJANGO_SUPERUSER_EMAIL" \
+      --password="$DJANGO_SUPERUSER_PASSWORD" || true
+else
+  echo "No se creará superusuario: faltan valores DJANGO_SUPERUSER_*"
 fi
 
 # Iniciar Django (puedes cambiar a gunicorn si es para prod)
