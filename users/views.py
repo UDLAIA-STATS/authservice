@@ -108,9 +108,15 @@ class UsuarioDeleteView(APIView):
     def delete(self, request, nombre_usuario):
         try:
             usuario = self.get_object(nombre_usuario)
+            data = request.data
+            data['is_active'] = False
             if not usuario:
                 return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
-            usuario.delete()
+            serializer = RegistroUsuarioSerializer(usuario, data=data, partial=True)
+            if not serializer.is_valid():
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            serializer.save()
             return Response({"mensaje": "Usuario eliminado exitosamente"}, status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

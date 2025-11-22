@@ -6,9 +6,10 @@ from django.contrib.auth import authenticate
 class RegistroUsuarioSerializer(serializers.ModelSerializer):
     contrasenia_usuario = serializers.CharField(write_only=True)
 
+
     class Meta:
         model = Usuario
-        fields = ['id', 'nombre_usuario', 'email_usuario', 'contrasenia_usuario', 'rol']
+        fields = ['id', 'nombre_usuario', 'email_usuario', 'contrasenia_usuario', 'rol', 'is_active']
         read_only_fields = ['id']
 
     def create(self, validated_data):
@@ -17,7 +18,8 @@ class RegistroUsuarioSerializer(serializers.ModelSerializer):
                 nombre_usuario=validated_data['nombre_usuario'],
                 email_usuario=validated_data['email_usuario'],
                 contrasenia_usuario=validated_data['contrasenia_usuario'],
-                rol=validated_data.get('rol', 'profesor')
+                rol=validated_data.get('rol', 'profesor'),
+                is_active=validated_data.get('is_active', True)
             )
             return user
         except ValueError as e:
@@ -26,15 +28,14 @@ class RegistroUsuarioSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'error': 'El usuario o correo ya está registrado.'})
         
     def update(self, instance, validated_data):
-        if 'nombre_usuario' in validated_data:
-            instance.nombre_usuario = validated_data.get('nombre_usuario', instance.nombre_usuario)
-        if 'email_usuario' in validated_data:
-            instance.email_usuario = validated_data.get('email_usuario', instance.email_usuario)
+        instance.nombre_usuario = validated_data.get('nombre_usuario', instance.nombre_usuario)
+        instance.email_usuario = validated_data.get('email_usuario', instance.email_usuario)
         if 'contrasenia_usuario' in validated_data:
             password = validated_data['contrasenia_usuario']
             if password:
                 instance.set_password(password)
         instance.rol = validated_data.get('rol', instance.rol)
+        instance.is_active = validated_data.get('is_active', instance.is_active)
         instance.save()
         return instance
     
@@ -47,11 +48,11 @@ class LoginUsuarioSerializer(serializers.Serializer):
     nombre_usuario = serializers.CharField()
     contrasenia_usuario = serializers.CharField(write_only=True)
 
-    def validate(self, data):
+    def validate(self, attrs):
         user = authenticate(
             request=self.context.get('request'),
-            username=data['nombre_usuario'],
-            password=data['contrasenia_usuario']
+            username=attrs['nombre_usuario'],
+            password=attrs['contrasenia_usuario']
         )
         if not user:
             raise serializers.ValidationError("Usuario o contraseña incorrecta")
