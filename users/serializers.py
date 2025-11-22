@@ -10,7 +10,7 @@ class RegistroUsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
         fields = ['id', 'nombre_usuario', 'email_usuario', 'contrasenia_usuario', 'rol', 'is_active']
-        read_only_fields = ['id']
+        read_only_fields = ['id', 'is_active']
 
     def create(self, validated_data):
         try:
@@ -18,8 +18,7 @@ class RegistroUsuarioSerializer(serializers.ModelSerializer):
                 nombre_usuario=validated_data['nombre_usuario'],
                 email_usuario=validated_data['email_usuario'],
                 contrasenia_usuario=validated_data['contrasenia_usuario'],
-                rol=validated_data.get('rol', 'profesor'),
-                is_active=validated_data.get('is_active', True)
+                rol=validated_data.get('rol', 'profesor')
             )
             return user
         except ValueError as e:
@@ -35,7 +34,6 @@ class RegistroUsuarioSerializer(serializers.ModelSerializer):
             if password:
                 instance.set_password(password)
         instance.rol = validated_data.get('rol', instance.rol)
-        instance.is_active = validated_data.get('is_active', instance.is_active)
         instance.save()
         return instance
     
