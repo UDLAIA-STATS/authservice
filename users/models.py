@@ -1,7 +1,6 @@
 #Models.py
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
-from decouple import config
 
 class UsuarioManager(BaseUserManager):
     def create_user(self, nombre_usuario, email_usuario, contrasenia_usuario=None, **extra_fields):
@@ -25,11 +24,11 @@ class UsuarioManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, nombre_usuario, email_usuario, **extra_fields):
+    def create_superuser(self, nombre_usuario, email_usuario, contrasenia_usuario=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('rol', 'superuser')
-        return self.create_user(nombre_usuario, email_usuario, config('DJANGO_SUPERUSER_PASSWORD', cast=str), **extra_fields)
+        return self.create_user(nombre_usuario, email_usuario, contrasenia_usuario, **extra_fields)
 
 
 class Usuario(AbstractBaseUser, PermissionsMixin):
