@@ -13,11 +13,6 @@ RUN apt-get update \
 
 COPY . /app
 
-# No copies .env dentro de la imagen (mala práctica).
-# El docker-compose ya montará variables de entorno.
-# Si lo necesitas para desarrollo, descomenta:
-# COPY .env /app/.env
-
 COPY docker/entrypoint_auth.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 

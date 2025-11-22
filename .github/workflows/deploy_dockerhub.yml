@@ -96,16 +96,6 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
-      - name: Set up .env file
-        run: | 
-          echo "DEBUG=True" > .env
-          echo "ALLOWED_HOSTS=localhost,127.0.0.1" >> .env
-          echo "POSTGRES_HOST=localhost" >> .env
-          echo "POSTGRES_PORT=5440" >> .env
-          echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env
-          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env
-          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
-      
       - name: Construir imagen del microservicio Django
         run: |
           docker build \
