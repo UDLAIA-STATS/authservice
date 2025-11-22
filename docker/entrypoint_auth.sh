@@ -8,6 +8,10 @@ if [ -f /app/.env ]; then
   set +a
 fi
 
+if [[ -z "$POSTGRES_HOST" ]] || [[ -z "$POSTGRES_PORT" ]]; then
+  echo "Error: POSTGRES_HOST y POSTGRES_PORT deben estar definidos"
+  exit 1
+fi
 echo "Esperando a Postgres en $POSTGRES_HOST:$POSTGRES_PORT..."
 TIMEOUT=60
 ELAPSED=0
