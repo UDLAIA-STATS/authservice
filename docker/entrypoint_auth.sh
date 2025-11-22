@@ -1,20 +1,35 @@
 #!/usr/bin/env bash
 set -e
 
-# Si existe .env, exporta sus variables (POSIX)
+# Cargar .env si existe dentro de /app (opcional)
 if [ -f /app/.env ]; then
   set -a
   . /app/.env
   set +a
 fi
 
-# Espera corta opcional para asegurar DB (puedes ampliar si necesario)
-# sleep 2
+echo "Esperando a Postgres en $POSTGRES_HOST:$POSTGRES_PORT..."
+while ! nc -z "$POSTGRES_HOST" "$POSTGRES_PORT"; do
+  sleep 1
+done
+echo "Postgres disponible."
 
-# Crear migraciones y aplicar migraciones (no interactivo)
-python manage.py makemigrations --noinput || true
+# Aplicar migraciones
 python manage.py migrate --noinput
-python manage.py createsuperuser --noinput --username "administrador" --email "admin@gmail.com" --password "administrador123" || true
 
-# Arrancar servidor (en dev uso runserver; reemplaza por gunicorn para producción)
+# Crear superusuario solo si no existe
+if [ -n "$DJANGO_SUPERUSER_PASSWORD" ]; then
+python <<EOF
+from django.contrib.auth import get_user_model
+User = get_user_model()
+if not User.objects.filter(nombre_usuario="administrador").exists():
+    User.objects.create_superuser(
+        "administrador",
+        "admin@gmail.com",
+        "$DJANGO_SUPERUSER_PASSWORD"
+    )
+EOF
+fi
+
+# Iniciar Django (puedes cambiar a gunicorn si es para prod)
 exec python manage.py runserver 0.0.0.0:8010
