@@ -15,7 +15,6 @@ from pathlib import Path
 import sys
 from decouple import config
 from django.core.management.commands.runserver import Command as rs
-from jwt import decode
 
 rs.default_port = config('API_PORT', default='8010')
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
