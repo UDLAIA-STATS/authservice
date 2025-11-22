@@ -26,8 +26,8 @@ done
 echo "Postgres disponible."
 
 # Aplicar migraciones
+python manage.py makemigrations --noinput || true
 python manage.py migrate --noinput
-python manage.py makemigrations --noinput
 # Crear superusuario solo si no existe
 if [[ -n "$DJANGO_SUPERUSER_USERNAME" ]] && [[ -n "$DJANGO_SUPERUSER_EMAIL" ]] && [[ -n "$DJANGO_SUPERUSER_PASSWORD" ]]; then
   echo "Creando superusuario usando parámetros CLI de Django..."
