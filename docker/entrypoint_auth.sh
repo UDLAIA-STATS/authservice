@@ -9,8 +9,15 @@ if [ -f /app/.env ]; then
 fi
 
 echo "Esperando a Postgres en $POSTGRES_HOST:$POSTGRES_PORT..."
+TIMEOUT=60
+ELAPSED=0
 while ! nc -z "$POSTGRES_HOST" "$POSTGRES_PORT"; do
   sleep 1
+  ELAPSED=$((ELAPSED + 1))
+  if [ $ELAPSED -ge $TIMEOUT ]; then
+    echo "Error: Postgres no disponible después de $TIMEOUT segundos"
+    exit 1
+  fi
 done
 echo "Postgres disponible."
 
