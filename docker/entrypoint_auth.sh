@@ -30,7 +30,7 @@ python manage.py migrate --noinput
 # Crear superusuario solo si no existe
 if [[ -n "$DJANGO_SUPERUSER_USERNAME" ]] && [[ -n "$DJANGO_SUPERUSER_EMAIL" ]] && [[ -n "$DJANGO_SUPERUSER_PASSWORD" ]]; then
   echo "Creando superusuario usando parámetros CLI de Django..."
-  python manage.py createsuperuser --nombre_usuario "$DJANGO_SUPERUSER_USERNAME" --email_usuario "$DJANGO_SUPERUSER_EMAIL" --contrasenia_usuario "$DJANGO_SUPERUSER_PASSWORD" --noinput || true
+  python manage.py createsuperuser --nombre_usuario "$DJANGO_SUPERUSER_USERNAME" --email_usuario "$DJANGO_SUPERUSER_EMAIL" --noinput || true
 else
   echo "No se creará superusuario: faltan valores DJANGO_SUPERUSER_*"
 fi
