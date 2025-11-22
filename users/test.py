@@ -169,7 +169,7 @@ class UsuarioAPITestCase(TestCase):
         )
         response = self.client.delete(f"/api/users/{user.nombre_usuario}/delete/")
         self.assertEqual(response.status_code, 204)
-        self.assertFalse(Usuario.objects.filter(nombre_usuario="delete_me").exists())
+        self.assertFalse(Usuario.objects.filter(nombre_usuario="delete_me").first().is_active)
 
     def test_eliminar_usuario_inexistente(self):
         """❌ Intentar eliminar un usuario inexistente"""
