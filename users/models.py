@@ -31,7 +31,10 @@ class UsuarioManager(BaseUserManager):
         extra_fields.setdefault('rol', 'superuser')
         password = contrasenia_usuario
         if not password:
-            password = config('DJANGO_SUPERUSER_PASSWORD', cast=str)
+            # Fetch the superuser password from environment variables, if not provided as an argument.
+            password = config('DJANGO_SUPERUSER_PASSWORD', cast=str, default=None)
+        if not password:
+            raise ValueError('Superuser password must be set via argument or DJANGO_SUPERUSER_PASSWORD environment variable.')
         return self.create_user(nombre_usuario, email_usuario, password, **extra_fields)
     
 
