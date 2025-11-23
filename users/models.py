@@ -1,5 +1,4 @@
 #Models.py
-from email.policy import default
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 from decouple import config
