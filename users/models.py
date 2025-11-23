@@ -31,10 +31,10 @@ class UsuarioManager(BaseUserManager):
         extra_fields.setdefault('rol', 'superuser')
         password = contrasenia_usuario
         if not password:
-            # This will fetch the superuser password from environment variables, if the password is not provided
-            # as a command-line argument during superuser creation. It defaults to "4uAdmin23!" if not set. It only will be use for the administrator user and
-            # should be changed after the first login.
-            password = config('DJANGO_SUPERUSER_PASSWORD', cast=str, default="4uAdmin23!")
+            # Fetch the superuser password from environment variables, if not provided as an argument.
+            password = config('DJANGO_SUPERUSER_PASSWORD', cast=str, default=None)
+        if not password:
+            raise ValueError('Superuser password must be set via argument or DJANGO_SUPERUSER_PASSWORD environment variable.')
         return self.create_user(nombre_usuario, email_usuario, password, **extra_fields)
     
 
