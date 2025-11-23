@@ -1,4 +1,5 @@
 #Models.py
+from email.policy import default
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 from decouple import config
@@ -31,7 +32,10 @@ class UsuarioManager(BaseUserManager):
         extra_fields.setdefault('rol', 'superuser')
         password = contrasenia_usuario
         if not password:
-            password = config('DJANGO_SUPERUSER_PASSWORD', cast=str)
+            # This will fetch the superuser password from environment variables, if the password is not provided
+            # as a command-line argument during superuser creation. It defaults to "4uAdmin23!" if not set. It only will be use for the administrator user and
+            # should be changed after the first login.
+            password = config('DJANGO_SUPERUSER_PASSWORD', cast=str, default="4uAdmin23!")
         return self.create_user(nombre_usuario, email_usuario, password, **extra_fields)
     
 
