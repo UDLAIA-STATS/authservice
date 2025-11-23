@@ -30,7 +30,9 @@ class UsuarioManager(BaseUserManager):
         extra_fields.setdefault('rol', 'superuser')
         password = contrasenia_usuario
         if not password:
-            # Default password that should be changed by the user on first login
+            # WARNING: Using a hardcoded default password is a security risk.
+            # This password should be changed immediately after first login.
+            # Default password: 'admin123'
             password = 'admin123'
         return self.create_user(nombre_usuario, email_usuario, password, **extra_fields)
     
