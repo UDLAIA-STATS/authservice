@@ -278,7 +278,7 @@ docker run -d --name authservice -p 8010:8010 \
 - `POSTGRES_DB`: Nombre de la base de datos
 - `POSTGRES_USER`: Usuario de PostgreSQL
 - `POSTGRES_PASSWORD`: Contraseña de PostgreSQL
-- `DJANGO_SUPERUSER_PASSWORD` (opcional): Contraseña por defecto para crear superusuarios cuando no se proporciona una contraseña explícitamente
+- `DJANGO_SUPERUSER_PASSWORD` (opcional, recomendado): Contraseña por defecto para crear superusuarios cuando no se proporciona una contraseña explícitamente
 
 ## Tecnologías Utilizadas
 
