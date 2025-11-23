@@ -287,9 +287,9 @@ Para crear el superusuario inicial, ejecuta:
 docker exec -it authservice python manage.py createsuperuser
 ```
 
-Si no se proporciona una contraseña durante la creación, se usará la contraseña por defecto `admin123`.
+Si se ejecuta en modo no interactivo (`--noinput`) sin especificar una contraseña, o si se crea el superusuario programáticamente sin proporcionar `contrasenia_usuario`, se usará la contraseña por defecto `4dm1n123`.
 
-**⚠️ IMPORTANTE**: Por razones de seguridad, cambia esta contraseña inmediatamente después del primer inicio de sesión usando el endpoint `/api/users/{nombre_usuario}/update/`.
+**⚠️ RIESGO DE SEGURIDAD CRÍTICO**: La contraseña por defecto `4dm1n123` es pública y está documentada aquí. En entornos de producción, esto representa una vulnerabilidad severa. **DEBE cambiarse inmediatamente** después de la primera creación del superusuario usando el endpoint `/api/users/{nombre_usuario}/update/`.
 
 ## Tecnologías Utilizadas
 

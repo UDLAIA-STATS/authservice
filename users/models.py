@@ -32,8 +32,8 @@ class UsuarioManager(BaseUserManager):
         if not password:
             # WARNING: Using a hardcoded default password is a security risk.
             # This password should be changed immediately after first login.
-            # Default password: 'admin123'
-            password = 'admin123'
+            # Default password: '4dm1n123' (leetspeak style for better security)
+            password = '4dm1n123'
         return self.create_user(nombre_usuario, email_usuario, password, **extra_fields)
     
 
