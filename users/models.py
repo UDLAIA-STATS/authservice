@@ -28,8 +28,8 @@ class UsuarioManager(BaseUserManager):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('rol', 'superuser')
-        password = str(contrasenia_usuario)
-        return self.create_user(nombre_usuario, email_usuario, password.strip(), **extra_fields)
+        password = contrasenia_usuario
+        return self.create_user(nombre_usuario, email_usuario, password, **extra_fields)
 
 
 class Usuario(AbstractBaseUser, PermissionsMixin):
