@@ -279,6 +279,18 @@ docker run -d --name authservice -p 8010:8010 \
 - `POSTGRES_USER`: Usuario de PostgreSQL
 - `POSTGRES_PASSWORD`: Contraseña de PostgreSQL
 
+### Crear el Primer Superusuario
+
+Para crear el superusuario inicial, ejecuta:
+
+```bash
+docker exec -it authservice python manage.py createsuperuser
+```
+
+Si no se proporciona una contraseña durante la creación, se usará la contraseña por defecto `admin123`.
+
+**⚠️ IMPORTANTE**: Por razones de seguridad, cambia esta contraseña inmediatamente después del primer inicio de sesión usando el endpoint `/api/users/{nombre_usuario}/update/`.
+
 ## Tecnologías Utilizadas
 
 - **Django 5.0**: Framework web
