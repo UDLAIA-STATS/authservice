@@ -35,10 +35,10 @@ class RegistroUsuarioView(APIView):
             return Response({
                 'mensaje': 'Usuario creado exitosamente',
                 'usuario': {
-                    'id': user.id, #type: ignore
-                    'nombre_usuario': user.nombre_usuario, #type: ignore
-                    'email_usuario': user.email_usuario, #type: ignore
-                    'rol': user.rol #type: ignore
+                    'id': user.id,
+                    'nombre_usuario': user.nombre_usuario,
+                    'email_usuario': user.email_usuario,
+                    'rol': user.rol
                 },
                 'token': token.key
             }, status=status.HTTP_201_CREATED)
@@ -242,7 +242,7 @@ class LoginUsuarioView(APIView):
                 'token': token.key
             }, status=status.HTTP_200_OK)
         except ValidationError as ve:
-            errors = format_serializer_errors(ve.message_dict)
+            errors = format_serializer_errors(ve.detail)
             return Response({"error": errors}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
