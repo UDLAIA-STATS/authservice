@@ -87,7 +87,7 @@ class LoginUsuarioSerializer(serializers.Serializer):
             password=attrs['contrasenia_usuario']
         )
         if not user:
-            raise serializers.ValidationError("Usuario o contraseña incorrecta")
+            raise serializers.ValidationError("Usuario o contraseña incorrecta", code='authorization')
         if not user.is_active:
-            raise serializers.ValidationError("La cuenta está desactivada")
+            raise serializers.ValidationError("La cuenta está desactivada", code='authorization')
         return user

@@ -14,14 +14,14 @@ class UsuarioAPITestCase(TestCase):
         # Crear superusuario y token
         self.superuser = Usuario.objects.create_superuser(
             nombre_usuario="admin",
-            email_usuario="admin@test.com",
+            email_usuario="admin@udla.edu.ec",
             contrasenia_usuario="admin123"
         )
         Token.objects.get_or_create(user=self.superuser)
 
         self.profesor = Usuario.objects.create_user(
             nombre_usuario="profe",
-            email_usuario="profe@test.com",
+            email_usuario="profe@udla.edu.ec",
             contrasenia_usuario="123456",
             rol="profesor"
         )
@@ -38,8 +38,8 @@ class UsuarioAPITestCase(TestCase):
         """✅ Un superusuario puede registrar un profesor"""
         self.auth_as_superuser()
         payload = {
-            "nombre_usuario": "profe1",
-            "email_usuario": "profe1@test.com",
+            "nombre_usuario": "profesor",
+            "email_usuario": "profesor@udla.edu.ec",
             "contrasenia_usuario": "test123",
             "rol": "profesor"
         }
@@ -47,14 +47,14 @@ class UsuarioAPITestCase(TestCase):
 
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data["usuario"]["rol"], "profesor")
-        self.assertTrue(Usuario.objects.filter(nombre_usuario="profe1").exists())
+        self.assertTrue(Usuario.objects.filter(nombre_usuario="profesor").exists())
 
     def test_no_superuser_no_puede_registrar(self):
         """❌ Un profesor no puede registrar otros usuarios"""
         self.auth_as_profesor()
         payload = {
-            "nombre_usuario": "nuevo_user",
-            "email_usuario": "nuevo@test.com",
+            "nombre_usuario": "nuevo user",
+            "email_usuario": "nuevo@udla.edu.ec",
             "contrasenia_usuario": "pass"
         }
         response = self.client.post("/api/register/", payload, format="json")
@@ -65,12 +65,12 @@ class UsuarioAPITestCase(TestCase):
         self.auth_as_superuser()
         Usuario.objects.create_user(
             nombre_usuario="dup",
-            email_usuario="dup@test.com",
+            email_usuario="dup@udla.edu.ec",
             contrasenia_usuario="abc123"
         )
         payload = {
             "nombre_usuario": "dup",
-            "email_usuario": "dup@test.com",
+            "email_usuario": "dup@udla.edu.ec",
             "contrasenia_usuario": "abc123"
         }
         response = self.client.post("/api/register/", payload, format="json")
@@ -101,10 +101,11 @@ class UsuarioAPITestCase(TestCase):
     def test_listar_usuarios_con_paginacion(self):
         """✅ Listar usuarios con paginación"""
         self.auth_as_superuser()
+        names = ["Johana", "Carlos", "Ana", "Luis", "María"]
         for i in range(5):
             Usuario.objects.create_user(
-                nombre_usuario=f"user{i}",
-                email_usuario=f"user{i}@test.com",
+                nombre_usuario=f"{names[i]}",
+                email_usuario=f"user{i}@udla.edu.ec",
                 contrasenia_usuario="abc123"
             )
         response = self.client.get("/api/users/?page=1&offset=3")
@@ -125,7 +126,7 @@ class UsuarioAPITestCase(TestCase):
         self.auth_as_superuser()
         Usuario.objects.create_user(
             nombre_usuario="detalle",
-            email_usuario="detalle@test.com",
+            email_usuario="detalle@udla.edu.ec",
             contrasenia_usuario="abc123"
         )
         response = self.client.get("/api/users/detalle/")
@@ -143,14 +144,14 @@ class UsuarioAPITestCase(TestCase):
         """✅ Actualiza datos parcialmente"""
         self.auth_as_superuser()
         Usuario.objects.create_user(
-            nombre_usuario="update_me",
-            email_usuario="update@test.com",
+            nombre_usuario="update me",
+            email_usuario="update@udla.edu.ec",
             contrasenia_usuario="abc123"
         )
-        payload = {"email_usuario": "nuevo_email@test.com"}
-        response = self.client.patch("/api/users/update_me/update/", payload, format="json")
+        payload = {"email_usuario": "nuevo_email@udla.edu.ec"}
+        response = self.client.patch("/api/users/update me/update/", payload, format="json")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data["email_usuario"], "nuevo_email@test.com")
+        self.assertEqual(response.data["email_usuario"], "nuevo_email@udla.edu.ec")
 
     def test_actualizar_usuario_inexistente(self):
         """❌ Actualización de usuario inexistente"""
@@ -163,13 +164,13 @@ class UsuarioAPITestCase(TestCase):
         """✅ Elimina usuario correctamente"""
         self.auth_as_superuser()
         user = Usuario.objects.create_user(
-            nombre_usuario="delete_me",
-            email_usuario="delete@test.com",
+            nombre_usuario="delete me",
+            email_usuario="delete@udla.edu.ec",
             contrasenia_usuario="abc123"
         )
         response = self.client.delete(f"/api/users/{user.nombre_usuario}/delete/")
         self.assertEqual(response.status_code, 204)
-        self.assertFalse(Usuario.objects.filter(nombre_usuario="delete_me").first().is_active)
+        self.assertFalse(Usuario.objects.filter(nombre_usuario="delete me").first().is_active)
 
     def test_eliminar_usuario_inexistente(self):
         """❌ Intentar eliminar un usuario inexistente"""
