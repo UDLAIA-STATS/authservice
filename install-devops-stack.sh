@@ -77,7 +77,8 @@ install_argocd() {
     print_success "ArgoCD instalado correctamente"
     print_info "URL: https://localhost:8080"
     print_info "Usuario: admin"
-    print_info "Contraseña: $ARGOCD_PASSWORD"
+    print_info "Para obtener la contraseña inicial de ArgoCD, ejecute:"
+    print_info "kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath=\"{.data.password}\" | base64 -d"
     
     # Port forwarding
     kubectl port-forward svc/argocd-server -n argocd 8080:443 &
