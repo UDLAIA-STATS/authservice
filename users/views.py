@@ -35,10 +35,10 @@ class RegistroUsuarioView(APIView):
             return Response({
                 'mensaje': 'Usuario creado exitosamente',
                 'usuario': {
-                    'id': user.id, #type: ignore
-                    'nombre_usuario': user.nombre_usuario, #type: ignore
-                    'email_usuario': user.email_usuario, #type: ignore
-                    'rol': user.rol #type: ignore
+                    'id': user.id,
+                    'nombre_usuario': user.nombre_usuario,
+                    'email_usuario': user.email_usuario,
+                    'rol': user.rol
                 },
                 'token': token.key
             }, status=status.HTTP_201_CREATED)
