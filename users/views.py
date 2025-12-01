@@ -242,7 +242,7 @@ class LoginUsuarioView(APIView):
                 'token': token.key
             }, status=status.HTTP_200_OK)
         except ValidationError as ve:
-            errors = format_serializer_errors(ve.message_dict)
+            errors = format_serializer_errors(ve.detail)
             return Response({"error": errors}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
