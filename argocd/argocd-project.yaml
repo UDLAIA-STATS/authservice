@@ -1,0 +1,60 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: authservice-project
+  namespace: argocd
+  # Finalizer that ensures that project is not deleted until it is not referenced by any application
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: AuthService Project for DevSecOps integration
+  sourceRepos:
+  - 'https://github.com/UDLAIA-STATS/authservice.git'
+  destinations:
+  - namespace: 'authservice-dev'
+    server: https://kubernetes.default.svc
+  - namespace: 'authservice-prod'
+    server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+  - group: ''
+    kind: Namespace
+  - group: 'rbac.authorization.k8s.io'
+    kind: ClusterRole
+  - group: 'rbac.authorization.k8s.io'
+    kind: ClusterRoleBinding
+  namespaceResourceWhitelist:
+  - group: 'apps'
+    kind: Deployment
+  - group: 'apps'
+    kind: StatefulSet
+  - group: 'apps'
+    kind: DaemonSet
+  - group: ''
+    kind: Service
+  - group: ''
+    kind: ConfigMap
+  - group: ''
+    kind: Secret
+  - group: ''
+    kind: PersistentVolumeClaim
+  - group: 'networking.k8s.io'
+    kind: Ingress
+  - group: 'batch'
+    kind: Job
+  - group: 'batch'
+    kind: CronJob
+  roles:
+  - name: admin
+    description: Admin access to AuthService project
+    policies:
+    - p, proj:authservice-project:admin, applications, *, authservice-project/*, allow
+    - p, proj:authservice-project:admin, repositories, get, *, allow
+    groups:
+    - admins
+  - name: developer
+    description: Developer access to AuthService project
+    policies:
+    - p, proj:authservice-project:developer, applications, get, authservice-project/*, allow
+    - p, proj:authservice-project:developer, applications, sync, authservice-project/*, allow
+    groups:
+    - developers

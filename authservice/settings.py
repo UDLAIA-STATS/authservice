@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-eyv6v@4d)_(z8ydmj)$dau4zfvxm=dm)@cgmajde7*z4@kopgo"
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True)
@@ -95,7 +95,12 @@ DATABASES = {
         }
 } 
     
-
+LAUNCHDARKLY_SDK_KEY = config('LAUNCHDARKLY_SDK_KEY')
+LAUNCHDARKLY_CONFIG = {
+    'connect_timeout': 5,
+    'read_timeout': 10,
+    'events_max_pending': 10000,
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
