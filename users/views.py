@@ -269,7 +269,8 @@ class TestDarklyView(APIView):
             )
 
             # Tracking your memberId lets us know you are connected.
-            ld_client().track('692cd78a64545909c597ca31', context)
+            ld_client_id = str(config('LDCLIENT_ID', cast=str, default=''))
+            ld_client().track(ld_client_id, context)
             print('SDK successfully initialized')
             return Response({"mensaje": "LaunchDarkly SDK inicializado correctamente"}, status=status.HTTP_200_OK)
         except Exception as e:
