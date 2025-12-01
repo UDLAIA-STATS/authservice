@@ -134,8 +134,16 @@ install_cli_tools() {
     if ! command -v argocd &> /dev/null; then
         print_info "Instalando ArgoCD CLI..."
         curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
-        sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
-        rm argocd-linux-amd64
+        curl -sSL -o argocd-linux-amd64.sha256 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64.sha256
+        if sha256sum -c argocd-linux-amd64.sha256; then
+            sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
+            print_success "ArgoCD CLI verificado e instalado correctamente."
+        else
+            print_error "La verificación de la integridad de ArgoCD CLI falló. Abortando instalación."
+            rm argocd-linux-amd64 argocd-linux-amd64.sha256
+            exit 1
+        fi
+        rm argocd-linux-amd64 argocd-linux-amd64.sha256
     fi
     
     # Instalar LaunchDarkly CLI
