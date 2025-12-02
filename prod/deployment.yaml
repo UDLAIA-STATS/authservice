@@ -2,8 +2,10 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: authservice
+  namespace: authservice-prod
   labels:
     app: authservice
+    environment: production
 spec:
   replicas: 2
   selector:
@@ -13,11 +15,70 @@ spec:
     metadata:
       labels:
         app: authservice
+        environment: production
+      annotations:
+        argocd.argoproj.io/sync-wave: "1"
+        launchdarkly.sdkVersion: "8.1.0"
     spec:
       imagePullSecrets:
         - name: regcred
+
       containers:
-        - name: authservice
-          image: udlaia-stats/authservice:latest
-          ports:
-            - containerPort: 3000
+      - name: authservice
+        image: dase123/udlaia-stats:authservice
+        ports:
+        - containerPort: 8010
+
+        env:
+        - name: DJANGO_SETTINGS_MODULE
+          value: "authservice.settings"
+
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: authservice-secrets
+              key: database-url
+
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: authservice-secrets
+              key: secret-key
+
+        - name: LAUNCHDARKLY_SDK_KEY
+          valueFrom:
+            secretKeyRef:
+              name: launchdarkly-secrets
+              key: sdk-key
+
+        - name: FEATURE_FLAGS_ENABLED
+          value: "true"
+
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+
+        livenessProbe:
+          httpGet:
+            path: /health/
+            port: 8010
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          failureThreshold: 3
+
+        readinessProbe:
+          httpGet:
+            path: /health/ready/
+            port: 8010
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          failureThreshold: 3
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000

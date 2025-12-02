@@ -103,6 +103,9 @@ jobs:
           FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
           DJANGO_SUPERUSER_USERNAME: ${{ secrets.DJANGO_SUPERUSER_USERNAME }}
           DJANGO_SUPERUSER_EMAIL: ${{ secrets.DJANGO_SUPERUSER_EMAIL }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          LAUNCHDARKLY_SDK_KEY: ${{ secrets.LAUNCHDARKLY_SDK_KEY }}
+          LDCLIENT_ID: ${{ secrets.LDCLIENT_ID }}
         run: |
           docker build \
             --build-arg DEBUG=True \

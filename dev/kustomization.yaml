@@ -1,9 +1,0 @@
-resources:
-  - deployment.yaml
-  - service.yaml
-
-nameSuffix: -prod
-
-commonLabels:
-  environment: production
-  app: authservice
