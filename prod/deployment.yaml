@@ -24,59 +24,91 @@ spec:
         - name: regcred
 
       containers:
-      - name: authservice
-        image: dase123/udlaia-stats:authservice
-        ports:
-        - containerPort: 8010
+        - name: authservice
+          image: dase123/udlaia-stats:authservice
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8010
+              name: http
 
-        env:
-        - name: DJANGO_SETTINGS_MODULE
-          value: "authservice.settings"
+          env:
+            - name: DJANGO_SETTINGS_MODULE
+              value: "authservice.settings"
 
-        - name: DATABASE_URL
-          valueFrom:
-            secretKeyRef:
-              name: authservice-secrets
-              key: database-url
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: authservice-secrets
+                  key: POSTGRES_DB
 
-        - name: SECRET_KEY
-          valueFrom:
-            secretKeyRef:
-              name: authservice-secrets
-              key: secret-key
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: authservice-secrets
+                  key: POSTGRES_USER
 
-        - name: LAUNCHDARKLY_SDK_KEY
-          valueFrom:
-            secretKeyRef:
-              name: launchdarkly-secrets
-              key: sdk-key
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: authservice-secrets
+                  key: POSTGRES_PASSWORD
 
-        - name: FEATURE_FLAGS_ENABLED
-          value: "true"
+            - name: DJANGO_SUPERUSER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: authservice-secrets
+                  key: DJANGO_SUPERUSER_PASSWORD
 
-        resources:
-          requests:
-            cpu: "100m"
-            memory: "128Mi"
-          limits:
-            cpu: "500m"
-            memory: "512Mi"
+            - name: DJANGO_SUPERUSER_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: authservice-secrets
+                  key: DJANGO_SUPERUSER_USERNAME
 
-        livenessProbe:
-          httpGet:
-            path: /health/
-            port: 8010
-          initialDelaySeconds: 10
-          periodSeconds: 10
-          failureThreshold: 3
+            - name: DJANGO_SUPERUSER_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: authservice-secrets
+                  key: DJANGO_SUPERUSER_EMAIL
 
-        readinessProbe:
-          httpGet:
-            path: /health/ready/
-            port: 8010
-          initialDelaySeconds: 10
-          periodSeconds: 10
-          failureThreshold: 3
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: authservice-secrets
+                  key: SECRET_KEY
+
+            - name: LAUNCHDARKLY_SDK_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: launchdarkly-secrets
+                  key: sdk-key
+
+            - name: FEATURE_FLAGS_ENABLED
+              value: "true"
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+          livenessProbe:
+            httpGet:
+              path: /health/
+              port: 8010
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /health/ready/
+              port: 8010
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
 
       securityContext:
         runAsNonRoot: true

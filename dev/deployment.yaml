@@ -21,69 +21,99 @@ spec:
         launchdarkly.sdkVersion: "8.1.0"
     spec:
       containers:
-      - name: authservice
-        image: dase123/udlaia-stats:authservice
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 8010
-          name: http
-        env:
-        - name: DJANGO_SETTINGS_MODULE
-          value: "authservice.settings"
+        - name: authservice
+          image: dase123/udlaia-stats:authservice
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8010
+              name: http
+          env:
+            - name: DJANGO_SETTINGS_MODULE
+              value: "authservice.settings"
 
-        - name: DATABASE_URL
-          valueFrom:
-            secretKeyRef:
-              name: authservice-secrets
-              key: database-url
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: authservice-secrets
+                  key: POSTGRES_DB
 
-        - name: SECRET_KEY
-          valueFrom:
-            secretKeyRef:
-              name: authservice-secrets
-              key: secret-key
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: authservice-secrets
+                  key: POSTGRES_USER
 
-        - name: LAUNCHDARKLY_SDK_KEY
-          valueFrom:
-            secretKeyRef:
-              name: launchdarkly-secrets
-              key: sdk-key
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: authservice-secrets
+                  key: POSTGRES_PASSWORD
 
-        - name: ENVIRONMENT
-          value: "development"
+            - name: DJANGO_SUPERUSER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: authservice-secrets
+                  key: DJANGO_SUPERUSER_PASSWORD
 
-        - name: FEATURE_FLAGS_ENABLED
-          value: "true"
+            - name: DJANGO_SUPERUSER_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: authservice-secrets
+                  key: DJANGO_SUPERUSER_USERNAME
 
-        resources:
-          limits:
-            cpu: "500m"
-            memory: "256Mi"
-          requests:
-            cpu: "250m"
-            memory: "128Mi"
+            - name: DJANGO_SUPERUSER_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: authservice-secrets
+                  key: DJANGO_SUPERUSER_EMAIL
 
-        livenessProbe:
-          httpGet:
-            path: /health/
-            port: 8010
-          initialDelaySeconds: 20
-          periodSeconds: 10
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: authservice-secrets
+                  key: SECRET_KEY
 
-        readinessProbe:
-          httpGet:
-            path: /health/ready/
-            port: 8010
-          initialDelaySeconds: 5
-          periodSeconds: 5
+            - name: LAUNCHDARKLY_SDK_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: launchdarkly-secrets
+                  key: sdk-key
 
-        startupProbe:
-          httpGet:
-            path: /health/
-            port: 8010
-          initialDelaySeconds: 10
-          periodSeconds: 5
-          failureThreshold: 30
+            - name: ENVIRONMENT
+              value: "development"
+
+            - name: FEATURE_FLAGS_ENABLED
+              value: "true"
+
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+            requests:
+              cpu: "250m"
+              memory: "128Mi"
+
+          livenessProbe:
+            httpGet:
+              path: /health/
+              port: 8010
+            initialDelaySeconds: 20
+            periodSeconds: 10
+
+          readinessProbe:
+            httpGet:
+              path: /health/ready/
+              port: 8010
+            initialDelaySeconds: 5
+            periodSeconds: 5
+
+          startupProbe:
+            httpGet:
+              path: /health/
+              port: 8010
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 30
 
       serviceAccountName: authservice
       automountServiceAccountToken: false
