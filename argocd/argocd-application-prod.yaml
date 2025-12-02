@@ -10,6 +10,7 @@ spec:
   source:
     repoURL: https://github.com/UDLAIA-STATS/authservice.git
     targetRevision: HEAD
+    path: .
   destination:
     server: https://kubernetes.default.svc
     namespace: authservice-prod
