@@ -3,6 +3,7 @@
 # Script para configurar ArgoCD con las aplicaciones de AuthService
 
 echo "🔧 Configurando ArgoCD para AuthService..."
+ARGOCD_PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
 
 # Login a ArgoCD (asumiendo que está instalado y accesible)
 argocd login localhost:8080 --username admin --password $ARGOCD_PASSWORD --insecure
