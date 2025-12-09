@@ -36,16 +36,16 @@ class RegistroUsuarioView(APIView):
                 raise ValidationError(message=errors) 
             user = serializer.save() 
             token, _ = Token.objects.get_or_create(user=user)
-            return Response({
-                'mensaje': 'Usuario creado exitosamente',
-                'usuario': {
+            return success_response(
+                message='Usuario creado exitosamente',
+                data={
                     'id': user.id,
                     'nombre_usuario': user.nombre_usuario,
                     'email_usuario': user.email_usuario,
                     'rol': user.rol
                 },
-                'token': token.key
-            }, status=status.HTTP_201_CREATED)
+                status=status.HTTP_201_CREATED
+            )
         except IntegrityError:
             return error_response(
                 data=None,
