@@ -46,6 +46,17 @@ spec:
                 secretKeyRef:
                   name: authservice-secrets
                   key: POSTGRES_USER
+            - name: POSTGRES_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: authservice-secrets
+                  key: POSTGRES_HOST
+
+            - name: POSTGRES_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: authservice-secrets
+                  key: POSTGRES_PORT
 
             - name: POSTGRES_PASSWORD
               valueFrom:
