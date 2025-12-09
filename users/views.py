@@ -301,3 +301,12 @@ class TestDarklyView(APIView):
             return Response({"mensaje": "LaunchDarkly SDK inicializado correctamente"}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class HealthView(APIView):
+    """
+    Vista de salud para verificar que el servicio está funcionando.
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        return Response({"status": "ok"}, status=status.HTTP_200_OK)

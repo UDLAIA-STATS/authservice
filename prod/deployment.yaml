@@ -111,15 +111,7 @@ spec:
               port: 8010
             initialDelaySeconds: 10
             periodSeconds: 10
-            failureThreshold: 3
-
-          readinessProbe:
-            httpGet:
-              path: /health/ready/
-              port: 8010
-            initialDelaySeconds: 10
-            periodSeconds: 10
-            failureThreshold: 3
+            failureThreshold: 33
 
       securityContext:
         runAsNonRoot: true
