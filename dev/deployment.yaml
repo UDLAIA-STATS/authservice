@@ -20,6 +20,9 @@ spec:
         argocd.argoproj.io/sync-wave: "1"
         launchdarkly.sdkVersion: "8.1.0"
     spec:
+      imagePullSecrets:
+        - name: regcred
+
       containers:
         - name: authservice
           image: dase123/udlaia-stats:authservice
