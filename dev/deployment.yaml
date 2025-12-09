@@ -109,19 +109,10 @@ spec:
             httpGet:
               path: /health/
               port: 8010
-            initialDelaySeconds: 20
-            periodSeconds: 10
-
-          startupProbe:
-            httpGet:
-              path: /health/
-              port: 8010
             initialDelaySeconds: 10
-            periodSeconds: 5
-            failureThreshold: 30
+            periodSeconds: 10
+            failureThreshold: 33
 
-      serviceAccountName: authservice
-      automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
