@@ -20,6 +20,7 @@ spec:
         argocd.argoproj.io/sync-wave: "1"
         launchdarkly.sdkVersion: "8.1.0"
     spec:
+      serviceAccountName: default
       imagePullSecrets:
         - name: regcred
 
