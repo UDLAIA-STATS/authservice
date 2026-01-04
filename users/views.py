@@ -1,5 +1,3 @@
-from os import error
-from anthropic import InternalServerError
 from decouple import config
 from math import ceil
 from django.core.exceptions import ValidationError
@@ -85,11 +83,15 @@ class UsuarioDetailView(APIView):
         try:
             usuario = self.get_object(nombre_usuario)
             serializer = RegistroUsuarioSerializer(usuario)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return success_response(
+                data=serializer.data,
+                status=status.HTTP_200_OK,
+                message="Usuario encontrado"
+            )
         except Http404:
-            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+            return error_response(status=status.HTTP_404_NOT_FOUND, message="Usuario no encontrado", data=None)
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return error_response(status=status.HTTP_500_INTERNAL_SERVER_ERROR, message=str(e), data=None) 
         
 class UsuarioUpdateView(APIView):
     """
@@ -119,9 +121,9 @@ class UsuarioUpdateView(APIView):
                 errors = format_serializer_errors(serializer.errors)
                 raise ValidationError(message=errors) 
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return success_response(data=serializer.data, message=f"Usuario {nombre_usuario} actualizado", status=status.HTTP_200_OK)
         except Http404:
-            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+            return error_response(message=f"Usuario {nombre_usuario} no encontrado", data=None, status=status.HTTP_404_NOT_FOUND)
         except ValidationError as ve:
             return error_response(
                 data=ve.messages,
@@ -152,9 +154,9 @@ class UsuarioDeleteView(APIView):
                 errors = format_serializer_errors(serializer.errors)
                 raise ValidationError(message=errors) 
             serializer.save()
-            return Response({"mensaje": "Usuario eliminado exitosamente"}, status=status.HTTP_204_NO_CONTENT)
+            return success_response(message=f"Usuario {nombre_usuario} eliminado exitósamente", status=status.HTTP_404_NOT_FOUND, data=None)
         except Http404:
-            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+            return error_response(data=None, message=f"Usuario {nombre_usuario} no encontrado", status=status.HTTP_404_NOT_FOUND)
         except ValidationError as ve:
             return error_response(
                 data=ve.messages,
@@ -219,18 +221,18 @@ class UsuarioAllView(APIView):
                 }
             }
 
-            return Response(response_data, status=status.HTTP_200_OK)
+            return pagination_response(
+                page=page,
+                total_items=total_items,
+                data=serializer.data,
+                status=status.HTTP_200_OK,
+                offset=offset,
+                pages=total_pages)
 
         except ValueError:
-            return Response(
-                {"error": "Los parámetros 'page' y 'offset' deben ser enteros."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return error_response("Los parámetros 'page' y 'offset' deben ser enteros.", None, status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response(
-                {"error": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return error_response(str(e), None, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class LoginUsuarioView(APIView):

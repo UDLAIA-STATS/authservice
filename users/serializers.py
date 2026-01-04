@@ -39,7 +39,7 @@ class RegistroUsuarioSerializer(serializers.ModelSerializer):
         instance.is_active = validated_data.get('is_active', instance.is_active)
         instance.save()
         return instance
-    
+
     def delete(self, instance):
         if not instance.is_active:
             raise serializers.ValidationError("El usuario ya está desactivado.")
