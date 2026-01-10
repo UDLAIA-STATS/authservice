@@ -29,8 +29,11 @@ class RegistroUsuarioView(APIView):
         try:
             serializer = RegistroUsuarioSerializer(data=request.data)
             if not serializer.is_valid():
-                errors = format_serializer_errors(serializer.errors)
-                raise ValidationError(message=errors) 
+                return error_response(
+                    data=format_serializer_errors(serializer.errors),
+                    message='Error de validación.',
+                    status=status.HTTP_400_BAD_REQUEST
+                ) 
             user = serializer.save() 
             token, _ = Token.objects.get_or_create(user=user)
             return success_response(
@@ -49,17 +52,17 @@ class RegistroUsuarioView(APIView):
                 message='El usuario o correo ya están registrados.',
                 status=status.HTTP_400_BAD_REQUEST
             )
-        except ValidationError as ve:
-            return error_response(
-                data=ve.messages,
-                message='Error de validación.',
-                status=status.HTTP_400_BAD_REQUEST
-            )
         except ValueError as e:
             return error_response(
                 data=None,
                 message=str(e),
                 status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return error_response(
+                data=None,
+                message='Error interno del servidor',
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
 
@@ -117,30 +120,27 @@ class UsuarioUpdateView(APIView):
             usuario = self.get_object(nombre_usuario)
             serializer = ActualizarUsuarioSerializer(usuario, data=request.data, partial=True)
             if not serializer.is_valid():
-                errors = format_serializer_errors(serializer.errors)
-                raise ValidationError(message=errors) 
+                return error_response(
+                    data=format_serializer_errors(serializer.errors),
+                    message='Error de validación.',
+                    status=status.HTTP_400_BAD_REQUEST
+                ) 
             serializer.save()
-            return success_response(data=serializer.data, message=f"Usuario {nombre_usuario} actualizado", status=status.HTTP_200_OK)
+            return success_response(
+                data=serializer.data,
+                message=f"Usuario {nombre_usuario} actualizado",
+                status=status.HTTP_200_OK)
         except Http404:
-            return error_response(message=f"Usuario {nombre_usuario} no encontrado", data=None, status=status.HTTP_404_NOT_FOUND)
-        except ValidationError as ve:
             return error_response(
-                data=ve.messages,
-                message='Error de validación.',
-                status=status.HTTP_400_BAD_REQUEST
-            )
+                message=f"Usuario {nombre_usuario} no encontrado",
+                data=None,
+                status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return error_response(
                 data=None,
                 message='Error interno del servidor',
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
-
-from django.http import Http404
-from rest_framework.views import APIView
-from rest_framework import permissions, status
-from .models import Usuario
 
 class UsuarioDeleteView(APIView):
     """
@@ -166,18 +166,16 @@ class UsuarioDeleteView(APIView):
             usuario.save()
 
             return success_response(
-                message=f"Usuario {nombre_usuario} eliminado exitosamente",
+                message=f"Usuario {nombre_usuario} desactivado exitosamente",
                 status=status.HTTP_200_OK,
                 data=None
             )
-
         except Http404:
             return error_response(
                 data=None,
                 message=f"Usuario {nombre_usuario} no encontrado",
                 status=status.HTTP_404_NOT_FOUND
             )
-
         except Exception:
             return error_response(
                 data=None,
@@ -239,9 +237,17 @@ class UsuarioAllView(APIView):
                 pages=total_pages)
 
         except ValueError:
-            return error_response("Los parámetros 'page' y 'offset' deben ser enteros.", None, status.HTTP_400_BAD_REQUEST)
+            return error_response(
+                "Los parámetros 'page' y 'offset' deben ser enteros.",
+                None,
+                status.HTTP_400_BAD_REQUEST
+            )
         except Exception as e:
-            return error_response(str(e), None, status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return error_response(
+                str(e),
+                None,
+                status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class LoginUsuarioView(APIView):
@@ -253,8 +259,11 @@ class LoginUsuarioView(APIView):
         try: 
             serializer = LoginUsuarioSerializer(data=request.data, context={'request': request})
             if not serializer.is_valid():
-                errors = format_serializer_errors(serializer.errors)
-                raise ValidationError(message=errors)
+                return error_response(
+                    data=format_serializer_errors(serializer.errors),
+                    message='Error de validación.',
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             user = serializer.validated_data
             token, _ = Token.objects.get_or_create(user=user)
             return success_response(
@@ -267,12 +276,6 @@ class LoginUsuarioView(APIView):
                     'token': token.key
                 },
                 status=status.HTTP_200_OK
-            )
-        except ValidationError as ve:
-            return error_response(
-                data=ve.messages,
-                message='Usuario o contraseña incorrectos.',
-                status=status.HTTP_400_BAD_REQUEST
             )
         except Http404:
             return error_response(

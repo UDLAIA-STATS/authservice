@@ -32,7 +32,7 @@ class ActualizarUsuarioSerializer(serializers.ModelSerializer):
         if not value.strip():
             raise serializers.ValidationError("El nombre no puede estar vacío.")
         if not re.match(patron, value):
-            raise serializers.ValidationError("Solo letras y espacios.")
+            raise serializers.ValidationError("El nombre de usuario debe contener solo letras y espacios.")
         if value.lower() == 'admin':
             raise serializers.ValidationError("El nombre 'admin' no está permitido.")
 
