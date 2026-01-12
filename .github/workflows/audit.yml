@@ -66,6 +66,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      
+      - name: Prepare environment
+        run: |
+          echo "START_DATE=$(date +'%d-%m-%YT%H-%M-%S-%Z')" >> $GITHUB_ENV
+          echo "START_TIMESTAMP=$(date +'%s')" >> $GITHUB_ENV
+          TMP_TARGET="https://blackfox-security.com"
+          echo "TARGET=$TMP_TARGET" >> $GITHUB_ENV
 
       - name: Levantar aplicación Django (para que SQLMap tenga endpoints)
         env:
@@ -82,25 +89,23 @@ jobs:
           python manage.py runserver 0.0.0.0:8000 &
           sleep 10   # dar tiempo a que arranque
 
-      - name: Instalar SQLMap
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y sqlmap
-
-      - name: Ejecutar SQLMap (escaneo básico)
-        run: |
-          sqlmap -u "http://localhost:8000/" \
-                 --batch \
-                 --crawl=2 \
-                 --level=1 \
-                 --risk=1 \
-                 --exclude-sysdbs \
-                 --flush-session \
-                 -o \
-                 --output-dir=sqlmap-output || true
+      - name: Scan with sqlmap
+        uses: thereisnotime/action-sqlmap@master
+        with:
+          url: "https://blackfox-security.com/vuln.php?id=1"
+          additional_args: "--batch --crawl=2 --random-agent --forms --level=5 --risk=3 --flush-session -o --output-dir=sqlmap-output || true "
 
       - name: Subir resultados de SQLMap
         uses: actions/upload-artifact@v4
         with:
           name: sqlmap-report
           path: sqlmap-output/
+      
+      - name: Commit and push changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: GitHub Actions
+          author_email: 41898282+github-actions[bot]@users.noreply.github.com
+          message: "👷 chore(sqlmap): add report for ${{ env.TARGET }}-${{ env.START_DATE }}-${{ env.START_TIMESTAMP }}"
+          add: "./reports/web/*"
+          pull: "--rebase --autostash"
