@@ -3,7 +3,7 @@ from rest_framework.response import Response
 
 def success_response(message: str, data: Any, status) -> Response:
     return Response(
-        data={
+        {
             "mensaje": message,
             "data": data,
             "status": status
@@ -13,7 +13,7 @@ def success_response(message: str, data: Any, status) -> Response:
 
 def error_response(message: str, data: Any, status) -> Response:
     return Response(
-        data={
+        {
             "error": message,
             "data": data,
             "status": status
@@ -29,7 +29,7 @@ def pagination_response(
         total_items: int,
         status) -> Response:
     return Response(
-        data={
+        {
             "count": total_items,
             "page": page,
             "offset": offset,

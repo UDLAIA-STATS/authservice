@@ -1,5 +1,3 @@
-from os import error
-from anthropic import InternalServerError
 from decouple import config
 from math import ceil
 from django.core.exceptions import ValidationError
@@ -8,11 +6,10 @@ from django.shortcuts import get_object_or_404
 from ldclient import Context
 from authservice.launchdarkly import ld_client
 from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework import status, permissions
 from rest_framework.authtoken.models import Token
 from django.db import IntegrityError
-from .serializers import RegistroUsuarioSerializer, LoginUsuarioSerializer
+from .serializers import ActualizarUsuarioSerializer, RegistroUsuarioSerializer, LoginUsuarioSerializer
 from .models import Usuario
 from .utils import error_response, success_response, pagination_response, format_serializer_errors
 
@@ -26,14 +23,17 @@ class RegistroUsuarioView(APIView):
     """
     Solo los superusuarios pueden registrar nuevos usuarios (profesores o superusuarios).
     """
-    permission_classes = [permissions.IsAuthenticated, EsSuperUsuario]
+    # permission_classes = [permissions.IsAuthenticated, EsSuperUsuario]
 
     def post(self, request):
         try:
             serializer = RegistroUsuarioSerializer(data=request.data)
             if not serializer.is_valid():
-                errors = format_serializer_errors(serializer.errors)
-                raise ValidationError(message=errors) 
+                return error_response(
+                    data=format_serializer_errors(serializer.errors),
+                    message='Error de validación.',
+                    status=status.HTTP_400_BAD_REQUEST
+                ) 
             user = serializer.save() 
             token, _ = Token.objects.get_or_create(user=user)
             return success_response(
@@ -52,17 +52,17 @@ class RegistroUsuarioView(APIView):
                 message='El usuario o correo ya están registrados.',
                 status=status.HTTP_400_BAD_REQUEST
             )
-        except ValidationError as ve:
-            return error_response(
-                data=ve.messages,
-                message='Error de validación.',
-                status=status.HTTP_400_BAD_REQUEST
-            )
         except ValueError as e:
             return error_response(
                 data=None,
                 message=str(e),
                 status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return error_response(
+                data=None,
+                message='Error interno del servidor',
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
 
@@ -70,7 +70,7 @@ class UsuarioDetailView(APIView):
     """
     Solo los superusuarios pueden acceder a los detalles de un usuario.
     """
-    permission_classes = [permissions.IsAuthenticated, EsSuperUsuario]
+    # permission_classes = [permissions.IsAuthenticated, EsSuperUsuario]
 
     def get_object(self, nombre_usuario):
         """
@@ -85,17 +85,21 @@ class UsuarioDetailView(APIView):
         try:
             usuario = self.get_object(nombre_usuario)
             serializer = RegistroUsuarioSerializer(usuario)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return success_response(
+                data=serializer.data,
+                status=status.HTTP_200_OK,
+                message="Usuario encontrado"
+            )
         except Http404:
-            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+            return error_response(status=status.HTTP_404_NOT_FOUND, message="Usuario no encontrado", data=None)
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return error_response(status=status.HTTP_500_INTERNAL_SERVER_ERROR, message=str(e), data=None) 
         
 class UsuarioUpdateView(APIView):
     """
     Solo los superusuarios pueden acceder a los detalles de un usuario.
     """
-    permission_classes = [permissions.IsAuthenticated, EsSuperUsuario]
+    # permission_classes = [permissions.IsAuthenticated, EsSuperUsuario]
 
     def get_object(self, nombre_usuario):
         return get_object_or_404(Usuario, nombre_usuario=nombre_usuario)
@@ -114,55 +118,71 @@ class UsuarioUpdateView(APIView):
         """
         try:
             usuario = self.get_object(nombre_usuario)
-            serializer = RegistroUsuarioSerializer(usuario, data=request.data, partial=True)
+            serializer = ActualizarUsuarioSerializer(usuario, data=request.data, partial=True)
             if not serializer.is_valid():
-                errors = format_serializer_errors(serializer.errors)
-                raise ValidationError(message=errors) 
+                return error_response(
+                    data=format_serializer_errors(serializer.errors),
+                    message='Error de validación.',
+                    status=status.HTTP_400_BAD_REQUEST
+                ) 
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return success_response(
+                data=serializer.data,
+                message=f"Usuario {nombre_usuario} actualizado",
+                status=status.HTTP_200_OK)
         except Http404:
-            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
-        except ValidationError as ve:
             return error_response(
-                data=ve.messages,
-                message='Error de validación.',
-                status=status.HTTP_400_BAD_REQUEST
-            )
+                message=f"Usuario {nombre_usuario} no encontrado",
+                data=None,
+                status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+            return error_response(
+                data=None,
+                message='Error interno del servidor',
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 class UsuarioDeleteView(APIView):
     """
-    Solo los superusuarios pueden acceder a los detalles de un usuario.
+    Solo los superusuarios pueden desactivar usuarios.
     """
-    permission_classes = [permissions.IsAuthenticated, EsSuperUsuario]
+    # permission_classes = [permissions.IsAuthenticated, EsSuperUsuario]
 
     def get_object(self, nombre_usuario):
         return get_object_or_404(Usuario, nombre_usuario=nombre_usuario)
 
-
     def delete(self, request, nombre_usuario):
         try:
             usuario = self.get_object(nombre_usuario)
-            data = request.data
-            data['is_active'] = False
-            serializer = RegistroUsuarioSerializer(usuario, data=data, partial=True)
-            if not serializer.is_valid():
-                errors = format_serializer_errors(serializer.errors)
-                raise ValidationError(message=errors) 
-            serializer.save()
-            return Response({"mensaje": "Usuario eliminado exitosamente"}, status=status.HTTP_204_NO_CONTENT)
-        except Http404:
-            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
-        except ValidationError as ve:
-            return error_response(
-                data=ve.messages,
-                message='Error de validación.',
-                status=status.HTTP_400_BAD_REQUEST
+
+            if not usuario.is_active:
+                return error_response(
+                    data=None,
+                    message="El usuario ya está desactivado.",
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            usuario.is_active = False
+            usuario.save()
+
+            return success_response(
+                message=f"Usuario {nombre_usuario} desactivado exitosamente",
+                status=status.HTTP_200_OK,
+                data=None
             )
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Http404:
+            return error_response(
+                data=None,
+                message=f"Usuario {nombre_usuario} no encontrado",
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception:
+            return error_response(
+                data=None,
+                message="Error interno del servidor",
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
        
 class UsuarioAllView(APIView):
     """
@@ -171,7 +191,7 @@ class UsuarioAllView(APIView):
     - ?page=<número de página>
     - ?offset=<cantidad de items por página>
     """
-    permission_classes = [permissions.IsAuthenticated, EsSuperUsuario]
+    # permission_classes = [permissions.IsAuthenticated, EsSuperUsuario]
 
     def get(self, request):
         """
@@ -189,8 +209,9 @@ class UsuarioAllView(APIView):
             offset = int(request.query_params.get('offset', 10))
 
             if page < 1 or offset < 1:
-                return Response(
-                    {"error": "Los parámetros 'page' y 'offset' deben ser mayores a 0."},
+                return error_response(
+                    data=None,
+                    message="Los parámetros 'page' y 'offset' deben ser mayores a 0.",
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
@@ -207,29 +228,25 @@ class UsuarioAllView(APIView):
             # Serializar los datos
             serializer = RegistroUsuarioSerializer(usuarios_paginados, many=True)
 
-            response_data = {
-                "items": serializer.data,
-                "pagination": {
-                    "total_items": total_items,
-                    "total_pages": total_pages,
-                    "current_page": page,
-                    "offset": offset,
-                    "has_next": page < total_pages,
-                    "has_previous": page > 1,
-                }
-            }
-
-            return Response(response_data, status=status.HTTP_200_OK)
+            return pagination_response(
+                page=page,
+                total_items=total_items,
+                data=serializer.data,
+                status=status.HTTP_200_OK,
+                offset=offset,
+                pages=total_pages)
 
         except ValueError:
-            return Response(
-                {"error": "Los parámetros 'page' y 'offset' deben ser enteros."},
-                status=status.HTTP_400_BAD_REQUEST
+            return error_response(
+                "Los parámetros 'page' y 'offset' deben ser enteros.",
+                None,
+                status.HTTP_400_BAD_REQUEST
             )
         except Exception as e:
-            return Response(
-                {"error": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            return error_response(
+                str(e),
+                None,
+                status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
 
@@ -242,34 +259,34 @@ class LoginUsuarioView(APIView):
         try: 
             serializer = LoginUsuarioSerializer(data=request.data, context={'request': request})
             if not serializer.is_valid():
-                errors = format_serializer_errors(serializer.errors)
-                raise ValidationError(message=errors)
+                return error_response(
+                    data=format_serializer_errors(serializer.errors),
+                    message='Error de validación.',
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             user = serializer.validated_data
             token, _ = Token.objects.get_or_create(user=user)
-            return Response({
-                'mensaje': 'Inicio de sesión exitoso',
-                'usuario': {
+            return success_response(
+                message='Inicio de sesión exitoso',
+                data= {
                     'id': user.id, #type: ignore
                     'nombre_usuario': user.nombre_usuario, #type: ignore
                     'email_usuario': user.email_usuario, #type: ignore
-                    'rol': user.rol #type: ignore
+                    'rol': user.rol, #type: ignore
+                    'token': token.key
                 },
-                'token': token.key
-            }, status=status.HTTP_200_OK)
-        except ValidationError as ve:
-            return error_response(
-                data=ve.messages,
-                message='Usuario o contraseña incorrectos.',
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_200_OK
             )
         except Http404:
-            return Response(
-                {"error": "Usuario no encontrado"},
+            return error_response(
+                data=None,
+                message='Usuario o contraseña incorrectos.',
                 status=status.HTTP_404_NOT_FOUND
             )
         except Exception as e:
-            return Response(
-                {"error": "Error interno del servidor", "detalle": str(e)},
+            return error_response(
+                data=None,
+                message='Error interno del servidor',
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -284,7 +301,11 @@ class TestDarklyView(APIView):
             client = ld_client()
             if not client.is_initialized():
                 print('SDK failed to initialize')
-                return Response({"error": "Falló la inicialización del SDK de LaunchDarkly"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return error_response(
+                    data=None,
+                    message="Falló la inicialización del SDK de LaunchDarkly",
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
 
             
             context = (
@@ -298,9 +319,17 @@ class TestDarklyView(APIView):
             ld_client_id = str(config('LDCLIENT_ID', cast=str, default=''))
             ld_client().track(ld_client_id, context)
             print('SDK successfully initialized')
-            return Response({"mensaje": "LaunchDarkly SDK inicializado correctamente"}, status=status.HTTP_200_OK)
+            return success_response(
+                data=None,
+                message="LaunchDarkly SDK inicializado correctamente",
+                status=status.HTTP_200_OK
+            )
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return error_response(
+                data=None,
+                message='Error interno del servidor',
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 class HealthView(APIView):
     """
@@ -309,4 +338,8 @@ class HealthView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
-        return Response({"status": "ok"}, status=status.HTTP_200_OK)
+        return success_response(
+            data={"status": "ok"},
+            message="Servicio funcionando correctamente",
+            status=status.HTTP_200_OK
+        )

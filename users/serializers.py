@@ -4,6 +4,61 @@ from django.db import IntegrityError
 from .models import Usuario
 from django.contrib.auth import authenticate
 
+class ActualizarUsuarioSerializer(serializers.ModelSerializer):
+    contrasenia_usuario = serializers.CharField(
+        write_only=True,
+        required=False
+    )
+
+    class Meta:
+        model = Usuario
+        fields = [
+            'nombre_usuario',
+            'email_usuario',
+            'contrasenia_usuario',
+            'rol',
+            'is_active'
+        ]
+
+    def update(self, instance, validated_data):
+        if 'contrasenia_usuario' in validated_data:
+            instance.set_password(validated_data.pop('contrasenia_usuario'))
+
+        return super().update(instance, validated_data)
+
+    def validate_nombre_usuario(self, value):
+        patron = r"^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ ]+$"
+
+        if not value.strip():
+            raise serializers.ValidationError("El nombre no puede estar vacío.")
+        if not re.match(patron, value):
+            raise serializers.ValidationError("El nombre de usuario debe contener solo letras y espacios.")
+        if value.lower() == 'admin':
+            raise serializers.ValidationError("El nombre 'admin' no está permitido.")
+
+        if Usuario.objects.exclude(
+            id=self.instance.id
+        ).filter(nombre_usuario=value).exists():
+            raise serializers.ValidationError("El nombre ya está en uso.")
+
+        return value
+
+    def validate_email_usuario(self, value):
+        patron = r'^[a-zA-Z0-9._%+-]+@udla\.edu\.ec$'
+        value = value.lower()
+
+        if not re.match(patron, value):
+            raise serializers.ValidationError(
+                "El correo debe pertenecer al dominio udla.edu.ec."
+            )
+
+        if Usuario.objects.exclude(
+            id=self.instance.id
+        ).filter(email_usuario=value).exists():
+            raise serializers.ValidationError("El correo ya está en uso.")
+
+        return value
+
 class RegistroUsuarioSerializer(serializers.ModelSerializer):
     contrasenia_usuario = serializers.CharField(write_only=True)
 
@@ -39,7 +94,7 @@ class RegistroUsuarioSerializer(serializers.ModelSerializer):
         instance.is_active = validated_data.get('is_active', instance.is_active)
         instance.save()
         return instance
-    
+
     def delete(self, instance):
         if not instance.is_active:
             raise serializers.ValidationError("El usuario ya está desactivado.")
