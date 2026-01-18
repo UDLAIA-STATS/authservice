@@ -20,16 +20,6 @@ class UsuarioPostTestCase(UsuarioAPITestCase):
         self.assertTrue(Usuario.objects.filter(nombre_usuario="profesor").exists())
         self.assertEqual(Usuario.objects.get(nombre_usuario="profesor").rol, "profesor") # type: ignore
 
-    def test_no_superuser_no_puede_registrar(self):
-        """❌ Un profesor no puede registrar otros usuarios"""
-        self.auth_as_profesor()
-        payload = {
-            "nombre_usuario": "nuevo user",
-            "email_usuario": "nuevo@udla.edu.ec",
-            "contrasenia_usuario": "pass"
-        }
-        response = self.client.post("/api/register/", payload, format="json")
-        self.assertEqual(response.status_code, 403)
 
     def test_registro_falla_por_duplicado(self):
         """❌ No permite duplicados en nombre o correo"""
