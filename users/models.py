@@ -2,19 +2,18 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 from decouple import config
-from rest_framework import serializers
 
 class UsuarioManager(BaseUserManager):
     def create_user(self, nombre_usuario, email_usuario, contrasenia_usuario=None, **extra_fields):
         if not email_usuario:
-            raise serializers.ValidationError('El email es obligatorio')
+            raise ValueError('El email es obligatorio')
 
         email_usuario = self.normalize_email(email_usuario)
 
         if Usuario.objects.filter(nombre_usuario=nombre_usuario).exists():
-            raise serializers.ValidationError('Ya existe un usuario con ese nombre de usuario')
+            raise ValueError('Ya existe un usuario con ese nombre de usuario')
         if Usuario.objects.filter(email_usuario=email_usuario).exists():
-            raise serializers.ValidationError('Ya existe un usuario con ese correo electrónico')
+            raise ValueError('Ya existe un usuario con ese correo electrónico')
 
         user = self.model(
             nombre_usuario=nombre_usuario,
@@ -33,7 +32,7 @@ class UsuarioManager(BaseUserManager):
         if not password:
             password = config('DJANGO_SUPERUSER_PASSWORD', cast=str, default=None)
         if not password:
-            raise serializers.ValidationError('La contraseña de superusuario es obligatoria. Puede configurarla en las variables de entorno DJANGO_SUPERUSER_PASSWORD.')
+            raise ValueError('La contraseña de superusuario es obligatoria. Puede configurarla en las variables de entorno DJANGO_SUPERUSER_PASSWORD.')
         return self.create_user(nombre_usuario, email_usuario, '123456789', **extra_fields)
     
 
