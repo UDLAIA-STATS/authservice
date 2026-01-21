@@ -46,6 +46,7 @@ jobs:
           path: bandit-report.json
 
   tests:
+    needs: bandit
     runs-on: ubuntu-latest
     name: Ejecutar pruebas Django con base de datos en memoria
 
@@ -136,5 +137,3 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Mostrar imágenes subidas
-        run: docker images | grep ${{ env.IMAGE_NAME }}

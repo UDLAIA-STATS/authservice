@@ -10,7 +10,6 @@ class UsuarioManager(BaseUserManager):
 
         email_usuario = self.normalize_email(email_usuario)
 
-        # ⚠️ Validaciones por duplicados
         if Usuario.objects.filter(nombre_usuario=nombre_usuario).exists():
             raise ValueError('Ya existe un usuario con ese nombre de usuario')
         if Usuario.objects.filter(email_usuario=email_usuario).exists():
@@ -31,10 +30,9 @@ class UsuarioManager(BaseUserManager):
         extra_fields.setdefault('rol', 'superuser')
         password = contrasenia_usuario
         if not password:
-            # Fetch the superuser password from environment variables, if not provided as an argument.
             password = config('DJANGO_SUPERUSER_PASSWORD', cast=str, default=None)
         if not password:
-            raise ValueError('Superuser password must be set via argument or DJANGO_SUPERUSER_PASSWORD environment variable.')
+            raise ValueError('La contraseña de superusuario es obligatoria. Puede configurarla en las variables de entorno DJANGO_SUPERUSER_PASSWORD.')
         return self.create_user(nombre_usuario, email_usuario, '123456789', **extra_fields)
     
 
