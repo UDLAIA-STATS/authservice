@@ -33,7 +33,7 @@ class UsuarioManager(BaseUserManager):
         if not password:
             password = config('DJANGO_SUPERUSER_PASSWORD', cast=str, default=None)
         if not password:
-            raise serializers.ValidationError('La contraseñ de superusuario es obligatoria. Puede configurarla en las variables de entorno DJANGO_SUPERUSER_PASSWORD.')
+            raise serializers.ValidationError('La contraseña de superusuario es obligatoria. Puede configurarla en las variables de entorno DJANGO_SUPERUSER_PASSWORD.')
         return self.create_user(nombre_usuario, email_usuario, '123456789', **extra_fields)
     
 
