@@ -67,7 +67,7 @@ jobs:
       - name: Scan with sqlmap
         uses: thereisnotime/action-sqlmap@master
         with:
-          url: "https://blackfox-security.com/vuln.php?id=1"
+          url: "http://localhost:8000"
           additional_args: "--batch --crawl=2 --random-agent --forms --level=5 --risk=3 --flush-session -o --output-dir=sqlmap-output || true "
 
       - name: Subir resultados de SQLMap
