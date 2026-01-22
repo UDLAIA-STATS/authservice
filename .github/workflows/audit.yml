@@ -52,7 +52,7 @@ jobs:
       - name: Levantar aplicación Django (para que SQLMap tenga endpoints)
         env:
           DEBUG: True
-          SECRET_KEY: ci-secret-key
+          SECRET_KEY: ${{ env.SECRET_KEY }}
           POSTGRES_HOST: localhost
           POSTGRES_PORT: 5440
           POSTGRES_DB: ${{ env.POSTGRES_DB }}
