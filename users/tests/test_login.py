@@ -10,7 +10,7 @@ class UsuarioLoginTestCase(UsuarioAPITestCase):
         }, format="json")
         # Permitir variabilidad de la respuesta observada
         self.assertIn(response.status_code, (200, 400))
-    
+
     def test_login_invalido(self):
         """❌ Login con credenciales erróneas"""
         response = self.client.post("/api/login/", {

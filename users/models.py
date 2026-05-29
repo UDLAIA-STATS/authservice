@@ -1,7 +1,8 @@
-#Models.py
+# Models.py
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 from decouple import config
+
 
 class UsuarioManager(BaseUserManager):
     def create_user(self, nombre_usuario, email_usuario, contrasenia_usuario=None, **extra_fields):
@@ -24,7 +25,12 @@ class UsuarioManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, nombre_usuario, email_usuario, contrasenia_usuario=None, **extra_fields):
+    def create_superuser(
+            self,
+            nombre_usuario,
+            email_usuario,
+            contrasenia_usuario=None,
+            **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('rol', 'superuser')
@@ -32,9 +38,13 @@ class UsuarioManager(BaseUserManager):
         if not password:
             password = config('DJANGO_SUPERUSER_PASSWORD', cast=str, default=None)
         if not password:
-            raise ValueError('La contraseña de superusuario es obligatoria. Puede configurarla en las variables de entorno DJANGO_SUPERUSER_PASSWORD.')
+            raise ValueError(
+                '''
+                La contraseña de superusuario es obligatoria.
+                Puede configurarla en las variables de entorno DJANGO_SUPERUSER_PASSWORD.
+                ''')
         return self.create_user(nombre_usuario, email_usuario, password, **extra_fields)
-    
+
 
 class Usuario(AbstractBaseUser, PermissionsMixin):
     ROLES = (
@@ -55,6 +65,6 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f"{self.nombre_usuario} ({self.rol})"
-    
+
     class Meta:
         db_table = 'usuarios'

@@ -4,6 +4,7 @@ from django.db import IntegrityError
 from .models import Usuario
 from django.contrib.auth import authenticate
 
+
 class ActualizarUsuarioSerializer(serializers.ModelSerializer):
     contrasenia_usuario = serializers.CharField(
         write_only=True,
@@ -21,7 +22,7 @@ class ActualizarUsuarioSerializer(serializers.ModelSerializer):
         ]
 
     def update(self, instance, validated_data):
-        if 'contrasenia_usuario' in validated_data:
+        if 'contrasenia_usuario' in validated_data and validated_data['contrasenia_usuario'] != '':
             instance.set_password(validated_data.pop('contrasenia_usuario'))
 
         return super().update(instance, validated_data)
@@ -32,7 +33,8 @@ class ActualizarUsuarioSerializer(serializers.ModelSerializer):
         if not value.strip():
             raise serializers.ValidationError("El nombre no puede estar vacío.")
         if not re.match(patron, value):
-            raise serializers.ValidationError("El nombre de usuario debe contener solo letras y espacios.")
+            raise serializers.ValidationError(
+                "El nombre de usuario debe contener solo letras y espacios.")
         if value.lower() == 'admin':
             raise serializers.ValidationError("El nombre 'admin' no está permitido.")
 
@@ -59,18 +61,24 @@ class ActualizarUsuarioSerializer(serializers.ModelSerializer):
 
         return value
 
+
 class RegistroUsuarioSerializer(serializers.ModelSerializer):
     contrasenia_usuario = serializers.CharField(write_only=True)
 
-
     class Meta:
         model = Usuario
-        fields = ['id', 'nombre_usuario', 'email_usuario', 'contrasenia_usuario', 'rol', 'is_active']
+        fields = [
+            'id',
+            'nombre_usuario',
+            'email_usuario',
+            'contrasenia_usuario',
+            'rol',
+            'is_active']
         read_only_fields = ['id']
 
     def create(self, validated_data):
         try:
-            user = Usuario.objects.create_user( # type: ignore
+            user = Usuario.objects.create_user(  # type: ignore
                 nombre_usuario=validated_data['nombre_usuario'],
                 email_usuario=validated_data['email_usuario'],
                 contrasenia_usuario=validated_data['contrasenia_usuario'],
@@ -82,7 +90,7 @@ class RegistroUsuarioSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'error': str(e)})
         except IntegrityError:
             raise serializers.ValidationError({'error': 'El usuario o correo ya está registrado.'})
-        
+
     def update(self, instance, validated_data):
         instance.nombre_usuario = validated_data.get('nombre_usuario', instance.nombre_usuario)
         instance.email_usuario = validated_data.get('email_usuario', instance.email_usuario)
@@ -101,18 +109,19 @@ class RegistroUsuarioSerializer(serializers.ModelSerializer):
         instance.is_active = False
         instance.save()
         return instance
-    
+
     def validate_nombre_usuario(self, value):
         patron = r"^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ ]+$"
         if not value or not value.strip():
             raise serializers.ValidationError("El nombre de usuario no puede estar vacío.")
         if not re.match(patron, value):
-            raise serializers.ValidationError("El nombre de usuario debe contener solo letras y espacios.")
+            raise serializers.ValidationError(
+                "El nombre de usuario debe contener solo letras y espacios.")
         if value.lower().strip() == 'admin':
             raise serializers.ValidationError("El nombre de usuario 'admin' no está permitido.")
         if Usuario.objects.filter(nombre_usuario=value).exists():
             raise serializers.ValidationError("El nombre de usuario ya está en uso.")
-        
+
         return value
 
     def validate_email_usuario(self, value):
@@ -123,11 +132,12 @@ class RegistroUsuarioSerializer(serializers.ModelSerializer):
         value = value.lower()
 
         if not re.match(patron, value):
-            raise serializers.ValidationError("El correo electrónico debe pertenecer al dominio udla.edu.ec.")
+            raise serializers.ValidationError(
+                "El correo electrónico debe pertenecer al dominio udla.edu.ec.")
 
         if Usuario.objects.filter(email_usuario=value).exists():
             raise serializers.ValidationError("El correo electrónico ya está en uso.")
-        
+
         return value
 
 
@@ -142,7 +152,8 @@ class LoginUsuarioSerializer(serializers.Serializer):
             password=attrs['contrasenia_usuario']
         )
         if not user:
-            raise serializers.ValidationError("Usuario o contraseña incorrecta", code='authorization')
+            raise serializers.ValidationError(
+                "Usuario o contraseña incorrecta", code='authorization')
         if not user.is_active:
             raise serializers.ValidationError("La cuenta está desactivada", code='authorization')
         return user

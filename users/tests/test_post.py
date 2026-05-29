@@ -1,5 +1,4 @@
 import json
-from venv import logger
 from users.tests.config import UsuarioAPITestCase, Usuario
 
 
@@ -18,8 +17,10 @@ class UsuarioPostTestCase(UsuarioAPITestCase):
         # Permite variación en la respuesta; validar con existencia en BD
         self.assertIn(response.status_code, (201, 200))
         self.assertTrue(Usuario.objects.filter(nombre_usuario="profesor").exists())
-        self.assertEqual(Usuario.objects.get(nombre_usuario="profesor").rol, "profesor") # type: ignore
-
+        self.assertEqual(
+            Usuario.objects.get(
+                nombre_usuario="profesor").rol,
+            "profesor")  # type: ignore
 
     def test_registro_falla_por_duplicado(self):
         """❌ No permite duplicados en nombre o correo"""
@@ -28,7 +29,7 @@ class UsuarioPostTestCase(UsuarioAPITestCase):
             nombre_usuario="dup",
             email_usuario="dup@udla.edu.ec",
             contrasenia_usuario="abc123"
-        ) # type: ignore
+        )  # type: ignore
         payload = {
             "nombre_usuario": "dup",
             "email_usuario": "dup@udla.edu.ec",
@@ -41,7 +42,7 @@ class UsuarioPostTestCase(UsuarioAPITestCase):
         self.assertTrue(
             any(k in data for k in ("nombre_usuario", "email_usuario", "error"))
         )
-    
+
     def test_registro_nombre_usuario_minimo_valido(self):
         """Boundary: mínimo de nombre_usuario (válido)"""
         self.auth_as_superuser()
@@ -61,7 +62,7 @@ class UsuarioPostTestCase(UsuarioAPITestCase):
         self.auth_as_superuser()
         payload = {
             "nombre_usuario": "User 123",
-            "email_usuario": f"example@udla.edu.ec",
+            "email_usuario": "example@udla.edu.ec",
             "contrasenia_usuario": "test1234",
             "rol": "profesor"
         }
@@ -107,7 +108,7 @@ class UsuarioPostTestCase(UsuarioAPITestCase):
         }
         response = self.client.post("/api/register/", payload, format="json")
         self.assertEqual(response.status_code, 400)
-    
+
     def test_registro_email_formato_invalido(self):
         """Boundary: formato de email_usuario inválido"""
         self.auth_as_superuser()
@@ -150,4 +151,3 @@ class UsuarioPostTestCase(UsuarioAPITestCase):
         }
         response = self.client.post("/api/register/", payload, format="json")
         self.assertEqual(response.status_code, 400)
-
