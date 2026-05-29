@@ -40,13 +40,13 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       
       - name: Prepare environment
         run: |
           echo "START_DATE=$(date +'%d-%m-%YT%H-%M-%S-%Z')" >> $GITHUB_ENV
           echo "START_TIMESTAMP=$(date +'%s')" >> $GITHUB_ENV
-          TMP_TARGET="https://blackfox-security.com"
+          TMP_TARGET="http://localhost:8000"
           echo "TARGET=$TMP_TARGET" >> $GITHUB_ENV
 
       - name: Levantar aplicación Django (para que SQLMap tenga endpoints)
@@ -67,7 +67,7 @@ jobs:
       - name: Scan with sqlmap
         uses: thereisnotime/action-sqlmap@master
         with:
-          url: "https://blackfox-security.com/vuln.php?id=1"
+          url: "http://localhost:8000"
           additional_args: "--batch --crawl=2 --random-agent --forms --level=5 --risk=3 --flush-session -o --output-dir=sqlmap-output || true "
 
       - name: Subir resultados de SQLMap
@@ -82,5 +82,5 @@ jobs:
           author_name: GitHub Actions
           author_email: 41898282+github-actions[bot]@users.noreply.github.com
           message: "👷 chore(sqlmap): add report for ${{ env.TARGET }}-${{ env.START_DATE }}-${{ env.START_TIMESTAMP }}"
-          add: "./reports/web/*"
+          add: "sqlmap-output/"
           pull: "--rebase --autostash"
