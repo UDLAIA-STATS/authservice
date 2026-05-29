@@ -13,7 +13,7 @@ class UsuarioGetTestCase(UsuarioAPITestCase):
                 nombre_usuario=f"{names[i]}",
                 email_usuario=f"user{i}@udla.edu.ec",
                 contrasenia_usuario="abc123"
-            ) # type: ignore
+            )  # type: ignore
         response = self.client.get("/api/users/?page=1&offset=3")
         self.assertEqual(response.status_code, 200)
         payload = self._payload(response)
@@ -33,7 +33,7 @@ class UsuarioGetTestCase(UsuarioAPITestCase):
             nombre_usuario="detalle",
             email_usuario="detalle@udla.edu.ec",
             contrasenia_usuario="abc123"
-        ) # type: ignore
+        )  # type: ignore
         response = self.client.get("/api/users/detalle/")
         content_string = response.content.decode('utf-8')
         data = json.loads(content_string)

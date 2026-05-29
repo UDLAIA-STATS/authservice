@@ -1,6 +1,7 @@
 from typing import Any
 from rest_framework.response import Response
 
+
 def success_response(message: str, data: Any, status) -> Response:
     return Response(
         {
@@ -11,6 +12,7 @@ def success_response(message: str, data: Any, status) -> Response:
         status=status
     )
 
+
 def error_response(message: str, data: Any, status) -> Response:
     return Response(
         {
@@ -20,6 +22,7 @@ def error_response(message: str, data: Any, status) -> Response:
         },
         status=status
     )
+
 
 def pagination_response(
         data: Any,

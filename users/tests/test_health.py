@@ -1,5 +1,5 @@
 import json
-from users.tests.config import Usuario, UsuarioAPITestCase
+from users.tests.config import UsuarioAPITestCase
 
 
 class HealthTestCase(UsuarioAPITestCase):
@@ -22,4 +22,3 @@ class HealthTestCase(UsuarioAPITestCase):
         content_string = response.content.decode('utf-8')
         data = json.loads(content_string)
         self.assertEqual(data['data'], {"status": "ok"})
-

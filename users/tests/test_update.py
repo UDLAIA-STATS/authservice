@@ -10,7 +10,7 @@ class UsuarioUpdateTestCase(UsuarioAPITestCase):
             nombre_usuario="update me",
             email_usuario="update@udla.edu.ec",
             contrasenia_usuario="abc123"
-        ) # type: ignore
+        )  # type: ignore
         payload = {"email_usuario": "nuevo_email@udla.edu.ec"}
         response = self.client.patch("/api/users/update me/update/", payload, format="json")
         self.assertEqual(response.status_code, 200)
@@ -23,5 +23,6 @@ class UsuarioUpdateTestCase(UsuarioAPITestCase):
     def test_actualizar_usuario_inexistente(self):
         """❌ Actualización de usuario inexistente"""
         self.auth_as_superuser()
-        response = self.client.patch("/api/users/fantasma/update/", {"rol": "profesor"}, format="json")
+        response = self.client.patch("/api/users/fantasma/update/",
+                                     {"rol": "profesor"}, format="json")
         self.assertEqual(response.status_code, 404)
